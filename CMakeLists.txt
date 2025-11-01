@@ -12,7 +12,7 @@ find_package(glfw3 REQUIRED)
 
 add_executable(g4
     src/main.cpp
-    src/glad.c
+    vendor/glad.c
 )
 
 target_include_directories(g4 PRIVATE dependencies)
