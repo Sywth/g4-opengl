@@ -19,7 +19,8 @@ set( _glfw3_HEADER_SEARCH_DIRS
 "/usr/local/include"
 "${CMAKE_SOURCE_DIR}/includes"
 "C:/Program Files (x86)/glfw/include" 
-"E:/lib/glfw/include"
+"E:/lib/glfw/include"               
+# NOTE : TODO : if none of the above lines are where your glfw include folder is, add it here
 )
 
 set( _glfw3_LIB_SEARCH_DIRS
@@ -28,6 +29,7 @@ set( _glfw3_LIB_SEARCH_DIRS
 "${CMAKE_SOURCE_DIR}/lib"
 "C:/Program Files (x86)/glfw/lib-msvc110" 
 "E:/lib/glfw/lib-vc2022"
+# NOTE : TODO : if none of the above lines are where your glfw3 lib folder is, add it here
 )
 
 # Check environment for root search directory

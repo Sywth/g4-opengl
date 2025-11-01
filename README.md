@@ -1,6 +1,6 @@
 # OpenGL G4
 
-A simple OpenGL project for me to test out from.
+A simple OpenGL project for me to test out from. You will also likely need to modifiy [the FindGLFW3.cmake file ](./cmake/FindGLFW3.cmake) (created by JoeyDeVries) to point the
 
 Note : Only works when running from CMake extension panel in VSCode for me personally.
 
@@ -16,5 +16,5 @@ Extensions :
 
 Misc :
 
-- Compiler : MSVC 2022
 - CPP Standard : 23
+- Using the MSVC 2022 amd64 build kit
