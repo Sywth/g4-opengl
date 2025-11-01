@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.26)
 project(g4 VERSION 0.0.1)
 cmake_policy(SET CMP0072 NEW)
 
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)

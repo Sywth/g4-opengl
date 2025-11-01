@@ -1,4 +1,5 @@
 #include "config.h"
+#include <expected>
 
 int main() {
     GLFWwindow* window;
