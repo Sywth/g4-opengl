@@ -12,6 +12,7 @@ find_package(glfw3 REQUIRED)
 
 add_executable(g4
     src/main.cpp
+    src/shader.cpp
     vendor/glad.c
 )
 

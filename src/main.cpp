@@ -1,11 +1,17 @@
-#include "config.h"
-#include <expected>
+#include <iostream>
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <fstream>
+#include <filesystem>
+#include "shader.h"
 
-int main() {
-    GLFWwindow* window;
+int main()
+{
+    GLFWwindow *window;
 
-    if (!glfwInit()) {
-        std::cout<<"Failed to initialize GLFW" << std::endl;
+    if (!glfwInit())
+    {
+        std::cout << "Failed to initialize GLFW" << std::endl;
         return -1;
     }
 
@@ -13,19 +19,25 @@ int main() {
     window = glfwCreateWindow(640, 480, "GLFW Window Test", nullptr, nullptr);
     glfwMakeContextCurrent(window);
 
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-        std::cout<<"Failed to initialize GLAD" << std::endl;
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        std::cout << "Failed to initialize GLAD" << std::endl;
         glfwTerminate();
         return -1;
     }
 
+    auto shaderProgram = create_shader_program("../../shaders/basic.vert", "../../shaders/basic.frag");
+
     glClearColor(0.8f, 0.1f, 0.8f, 1.0f);
-    while (!glfwWindowShouldClose(window)) {
+    while (!glfwWindowShouldClose(window))
+    {
         glfwPollEvents();
         glClear(GL_COLOR_BUFFER_BIT);
+        glUseProgram(shaderProgram);
         glfwSwapBuffers(window);
     }
 
+    glDeleteProgram(shaderProgram);
     glfwTerminate();
     return 0;
 }
