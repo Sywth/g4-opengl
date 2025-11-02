@@ -10,6 +10,7 @@ void APIENTRY gl_debug_output(GLenum source,
                               const char* message,
                               const void* userParam);
 
+// TODO : Translate the OpenGL error code to human-readable string
 inline void check_gl_error(const char* file, int line) {
   GLenum error;
   while ((error = glGetError()) != GL_NO_ERROR) {

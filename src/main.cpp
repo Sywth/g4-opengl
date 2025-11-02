@@ -83,6 +83,9 @@ int main() {
                                              "../../shaders/basic.frag");
   TriangleMesh mesh(vertices, indices, shaderProgram);
 
+  //   trigger an OpenGL error for testing
+  GL_CALL(glBindTexture(GL_TEXTURE_2D, 999999));  // Invalid texture ID
+
   GL_CALL(glClearColor(0.1f, 0.1f, 0.1f, 1.0f));
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();

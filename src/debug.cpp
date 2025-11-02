@@ -1,3 +1,5 @@
+// From https://learnopengl.com/In-Practice/Debugging
+//  Credit to Joey de Vries
 #include "debug.h"
 #include <iostream>
 
