@@ -13,6 +13,8 @@ find_package(glfw3 REQUIRED)
 add_executable(g4
     src/main.cpp
     src/shader.cpp
+    src/triangle_mesh.cpp
+    src/debug.cpp
     vendor/glad.c
 )
 

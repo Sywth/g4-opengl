@@ -7,7 +7,17 @@ Note : Only works when running from CMake extension panel in VSCode for me perso
 Dependencies :
 
 - Get [Glad from here](https://glad.dav1d.de/)
+
+  - Language : C/C++
+  - Specification : OpenGL
+  - API : gl version 4.3 (rest None)
+  - Profile : Core
+  - Generate a loader : Yes
+  - Extensions : None
+  - Skip anything not mentioned (basically default which is none / don't include)
+
 - Get [GLFW from here](https://www.glfw.org/download.html)
+  - Personally using 64-bit Windows binaries
 
 Extensions :
 
