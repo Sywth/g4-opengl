@@ -16,10 +16,6 @@
 #include <iostream>
 #include <iterator>
 
-// TODO :
-// - Figure out why the triangle is not being rendered
-// FIXME : Does not render the triangle :(
-
 float vertices[] = {
     -0.5f, -0.5f, 0.0f,  // left
     0.5f,  -0.5f, 0.0f,  // right
