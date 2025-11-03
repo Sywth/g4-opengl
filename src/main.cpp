@@ -3,6 +3,7 @@
 
 #include "debug.h"
 #include "shader.h"
+#include "triangle_mesh.h"
 
 // Glad must be included before GLFW
 // clang-format off
@@ -13,6 +14,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <iterator>
 
 // TODO :
 // - Figure out why the triangle is not being rendered
@@ -90,33 +92,13 @@ int main() {
             "Debug context was not available even when DEBUG flag was set");
     }
 #endif
-
     auto shaderProgram = create_shader_program("../../shaders/basic.vert",
                                                "../../shaders/basic.frag");
 
-    unsigned int vao, vbo, ebo;
-    GL_CALL(glGenVertexArrays(1, &vao));
-    GL_CALL(glGenBuffers(1, &vbo));
-    GL_CALL(glGenBuffers(1, &ebo));
-
-    GL_CALL(glBindVertexArray(vao));
-
-    GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, vbo));
-    GL_CALL(glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices,
-                         GL_STATIC_DRAW));
-
-    GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo));
-    GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
-                         GL_STATIC_DRAW));
-
-    GL_CALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
-                                  (void*)0));
-    GL_CALL(glEnableVertexAttribArray(0));
-
-    // Unbind for sanity
-    GL_CALL(glBindVertexArray(0));
-    GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
-    GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+    TriangleMesh triangle_mesh(
+        std::vector<float>(std::begin(vertices), std::end(vertices)),
+        std::vector<unsigned int>(std::begin(indices), std::end(indices)),
+        shaderProgram);
 
     while (!glfwWindowShouldClose(window)) {
         handle_window_events(window);
@@ -124,18 +106,12 @@ int main() {
         GL_CALL(glClearColor(0.2f, 0.3f, 0.3f, 1.0f));
         GL_CALL(glClear(GL_COLOR_BUFFER_BIT));
 
-        GL_CALL(glUseProgram(shaderProgram));
-        GL_CALL(glBindVertexArray(vao));
-        GL_CALL(glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0));
+        triangle_mesh.draw();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
-    GL_CALL(glDeleteProgram(shaderProgram));
-    GL_CALL(glDeleteVertexArrays(1, &vao));
-    GL_CALL(glDeleteBuffers(1, &vbo));
-    GL_CALL(glDeleteBuffers(1, &ebo));
     glfwTerminate();
     return 0;
 }
