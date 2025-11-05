@@ -35,9 +35,10 @@ TriangleMesh::TriangleMesh(const std::vector<float>& vertices,
                                   (void*)0));
     GL_CALL(glEnableVertexAttribArray(0));
 
-    GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
-    GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
+    // Unbind VAO before EBO, VBO (otherwise you'd be binding to the VAO again)
     GL_CALL(glBindVertexArray(0));
+    GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
+    GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
 }
 
 TriangleMesh::~TriangleMesh() {
