@@ -18,5 +18,5 @@ add_executable(g4
     vendor/glad.c
 )
 
-target_include_directories(g4 PRIVATE dependencies)
+target_include_directories(g4 PRIVATE dependencies include)
 target_link_libraries(g4 ${GLFW3_LIBRARY} OpenGL::GL)

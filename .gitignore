@@ -46,9 +46,12 @@ build/
 # Ignore everything under the dependencies directory by default
 dependencies/**
 vendor/**
+include/**
 
 # But allow directories (so git can recurse into them) and keep any .gitkeep files
 !dependencies/**/
 !dependencies/**/.gitkeep
 !vendor/**/
 !vendor/**/.gitkeep
+!include/**/
+!include/**/.gitkeep

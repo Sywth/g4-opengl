@@ -17,11 +17,15 @@
 #include <iterator>
 
 float vertices[] = {
-    -0.5f, -0.5f, 0.0f,  // left
-    0.5f,  -0.5f, 0.0f,  // right
-    0.0f,  0.5f,  0.0f   // top
+    0.5f,  -0.5f, 0.0f,  // Bottom Right
+    0.5f,  0.5f,  0.0f,  // Top Right
+    -0.5f, 0.5f,  0.0f,  // Top Left
+    -0.5f, -0.5f, 0.0f,  // Bottom Left
 };
-unsigned int indices[] = {2, 1, 0};
+unsigned int indices[] = {
+    0, 1, 3,  // First Triangle
+    1, 2, 3   // Second Triangle
+};
 
 void handle_window_events(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -32,7 +36,6 @@ void handle_window_events(GLFWwindow* window) {
 
 int main() {
     GLFWwindow* window;
-
     if (!glfwInit()) {
         LOG_ERROR("Failed to initialize GLFW");
         return -1;
@@ -96,6 +99,7 @@ int main() {
         std::vector<unsigned int>(std::begin(indices), std::end(indices)),
         shaderProgram);
 
+    GL_CALL(glEnable(GL_CULL_FACE));
     while (!glfwWindowShouldClose(window)) {
         handle_window_events(window);
 

@@ -17,7 +17,11 @@ Dependencies :
   - Skip anything not mentioned (basically default which is none / don't include)
 
 - Get [GLFW from here](https://www.glfw.org/download.html)
+
   - Personally using 64-bit Windows binaries
+
+- Get [GLM from here](https://github.com/g-truc/glm/releases)
+  - Place the glm folder inside the zip inside ./include
 
 Extensions :
 
