@@ -5,21 +5,22 @@
 TriangleMesh::TriangleMesh(const std::vector<float>& vertices,
                            const std::vector<unsigned int>& indices,
                            unsigned int shader_program)
-    //    TODO : Learn how member initializer list works
     : m_shader_program(shader_program),
       m_indices_count(static_cast<unsigned int>(indices.size())) {
-    // TODO : learn what needs to get bound to what first; i.e. can i bind vao
-    // later?
-    //     which line is the latest i can bind the vao at?
     GL_CALL(glGenVertexArrays(1, &m_vao));
+    GL_CALL(glGenBuffers(1, &m_vbo));
+    GL_CALL(glGenBuffers(1, &m_ebo));
+
+    // Qs : learn what needs to get bound to what first; i.e. can i bind vao
+    // later? [x]
+    // Ans : Not sure but bind the VAO first then bind the buffers and data (but
+    // i think only the EBO needs be bound after)
     GL_CALL(glBindVertexArray(m_vao));
 
-    GL_CALL(glGenBuffers(1, &m_vbo));
     GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, m_vbo));
     GL_CALL(glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float),
                          vertices.data(), GL_STATIC_DRAW));
 
-    GL_CALL(glGenBuffers(1, &m_ebo));
     GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo));
     GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER,
                          indices.size() * sizeof(unsigned int), indices.data(),
@@ -34,10 +35,9 @@ TriangleMesh::TriangleMesh(const std::vector<float>& vertices,
                                   (void*)0));
     GL_CALL(glEnableVertexAttribArray(0));
 
-    // TODO : Does the unbind order matter?
-    GL_CALL(glBindVertexArray(0));
-    GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
     GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+    GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
+    GL_CALL(glBindVertexArray(0));
 }
 
 TriangleMesh::~TriangleMesh() {
@@ -47,11 +47,9 @@ TriangleMesh::~TriangleMesh() {
 }
 
 void TriangleMesh::draw() const {
-    // TODO : Do i need bind the ebo?
     GL_CALL(glUseProgram(m_shader_program));
     GL_CALL(glBindVertexArray(m_vao));
     GL_CALL(glDrawElements(GL_TRIANGLES, m_indices_count, GL_UNSIGNED_INT, 0));
 
-    // TODO : Can i abstract the unbindings; bind(0) is somewhat non-intuitive
     GL_CALL(glBindVertexArray(0));
 }
