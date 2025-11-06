@@ -21,9 +21,15 @@ Dependencies :
   - Personally using 64-bit Windows binaries
 
 - Get [GLM from here](https://github.com/g-truc/glm/releases)
+
   - Place the glm folder inside the zip inside ./include
 
-Extensions :
+- Get [Assimp via vcpkg](https://vcpkg.io/en/package/assimp.html)
+  - Run the command in terminal : `.\vcpkg.exe install assimp` as [outlined here](https://vcpkg.io/en/package/assimp.html)
+  - This assume you have already installed / setup [vcpkg from this repo](https://github.com/Microsoft/vcpkg)
+    - Make sure you also set the [VCPKG_ROOT variable in CMakeLists.txt](./CMakeLists.txt) to point to your vcpkg installation path.
+
+VsCode Extensions :
 
 - [CMake](https://marketplace.visualstudio.com/items?itemName=twxs.cmake)
 - [CMakeTools](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cmake-tools)
