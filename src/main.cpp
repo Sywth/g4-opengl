@@ -5,8 +5,10 @@
 #include "shader.h"
 #include "triangle_mesh.h"
 
-#include <assimp/postprocess.h>
-#include <assimp/Importer.hpp>
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <iterator>
 
 // Glad must be included before GLFW
 // clang-format off
@@ -14,21 +16,20 @@
 #include <GLFW/glfw3.h>
 // clang-format on
 
-#include <filesystem>
-#include <fstream>
-#include <iostream>
-#include <iterator>
+#include <assimp/postprocess.h>
+#include <assimp/scene.h>
+#include <assimp/Importer.hpp>
 
-float vertices[] = {
-    0.5f,  -0.5f, 0.0f,  // Bottom Right
-    0.5f,  0.5f,  0.0f,  // Top Right
-    -0.5f, 0.5f,  0.0f,  // Top Left
-    -0.5f, -0.5f, 0.0f,  // Bottom Left
-};
-unsigned int indices[] = {
-    0, 1, 3,  // First Triangle
-    1, 2, 3   // Second Triangle
-};
+// float vertices[] = {
+//     0.5f,  -0.5f, 0.0f,  // Bottom Right
+//     0.5f,  0.5f,  0.0f,  // Top Right
+//     -0.5f, 0.5f,  0.0f,  // Top Left
+//     -0.5f, -0.5f, 0.0f,  // Bottom Left
+// };
+// unsigned int indices[] = {
+//     0, 1, 3,  // First Triangle
+//     1, 2, 3   // Second Triangle
+// };
 
 void handle_window_events(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -37,7 +38,77 @@ void handle_window_events(GLFWwindow* window) {
     }
 }
 
+bool load_scene(const std::filesystem::path& path,
+                const aiScene** outScene,
+                Assimp::Importer& importer) {
+    if (!std::filesystem::exists(path)) {
+        LOG_ERROR("No model found at " +
+                  std::filesystem::absolute(path).string());
+        return false;
+    }
+
+    *outScene = importer.ReadFile(
+        path.string(), aiProcess_Triangulate | aiProcess_JoinIdenticalVertices |
+                           aiProcess_SortByPType);
+
+    if (!(*outScene) || (*outScene)->mFlags & AI_SCENE_FLAGS_INCOMPLETE ||
+        !(*outScene)->mRootNode) {
+        LOG_ERROR("Assimp error: " + std::string(importer.GetErrorString()));
+        return false;
+    }
+
+    return true;
+}
+
+std::tuple<std::vector<float>, std::vector<unsigned int>> load_mesh_data(
+    const aiScene* scene,
+    unsigned int meshIndex) {
+    std::vector<float> vertices;
+    std::vector<unsigned int> indices;
+
+    if (meshIndex >= scene->mNumMeshes) {
+        LOG_ERROR("Mesh index out of bounds");
+        return {vertices, indices};
+    }
+
+    const aiMesh* mesh = scene->mMeshes[meshIndex];
+    if (!mesh) {
+        LOG_ERROR("Failed to retrieve mesh");
+        return {vertices, indices};
+    }
+
+    // Process vertices
+    vertices.reserve(mesh->mNumVertices * 3);
+    for (unsigned int i = 0; i < mesh->mNumVertices; ++i) {
+        const aiVector3D& pos = mesh->mVertices[i];
+        vertices.push_back(pos.x);
+        vertices.push_back(pos.y);
+        vertices.push_back(pos.z);
+    }
+
+    // Process indices
+    indices.reserve(mesh->mNumFaces * 3);
+    for (unsigned int i = 0; i < mesh->mNumFaces; ++i) {
+        const aiFace& face = mesh->mFaces[i];
+        indices.insert(indices.end(), face.mIndices,
+                       face.mIndices + face.mNumIndices);
+    }
+
+    return {vertices, indices};
+}
+
 int main() {
+    // TODO : Get this mesh loading into my custom triangle mesh class working
+    //  - I think it is working its just
+    //      - 1) It wrong ordering (must be ccw)
+    //      - 2) Its too big
+    Assimp::Importer importer;
+    const aiScene* scene = nullptr;
+    if (!load_scene("../../assets/models/cube/cube.obj", &scene, importer)) {
+        return -1;
+    }
+    auto [vertices, indices] = load_mesh_data(scene, 0);
+
     GLFWwindow* window;
     if (!glfwInit()) {
         LOG_ERROR("Failed to initialize GLFW");
