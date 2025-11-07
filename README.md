@@ -26,8 +26,9 @@ Dependencies :
 
 - Get [Assimp via vcpkg](https://vcpkg.io/en/package/assimp.html)
   - Run the command in terminal : `.\vcpkg.exe install assimp` as [outlined here](https://vcpkg.io/en/package/assimp.html)
-  - This assume you have already installed / setup [vcpkg from this repo](https://github.com/Microsoft/vcpkg)
-    - Make sure you also set the [VCPKG_ROOT variable in CMakeLists.txt](./CMakeLists.txt) to point to your vcpkg installation path.
+  - This assume you have already installed [vcpkg from this repo](https://github.com/Microsoft/vcpkg)
+  - Drag [headers](https://github.com/assimp/assimp/tree/master/include) to `./include/assimp`. You can get this from the source code zip on the [releases page](https://github.com/assimp/assimp/releases)
+  - This worked for me; but you might have to build assimp and statically link it if issues arise D:
 
 VsCode Extensions :
 

@@ -5,6 +5,9 @@
 #include "shader.h"
 #include "triangle_mesh.h"
 
+#include <assimp/postprocess.h>
+#include <assimp/Importer.hpp>
+
 // Glad must be included before GLFW
 // clang-format off
 #include <glad/glad.h>
