@@ -69,8 +69,8 @@ void load_trianuglated_mesh_data(const aiMesh* mesh,
     indices.reserve(mesh->mNumFaces * 3);
     for (unsigned int i = 0; i < mesh->mNumFaces; ++i) {
         const aiFace& face = mesh->mFaces[i];
-        assert(("Non-triangulated face found while trying to load mesh data",
-                face.mNumIndices == 3));
+        assert((face.mNumIndices == 3) &&
+               "non triangulated face found while trying to load mesh data");
 
         indices.push_back(face.mIndices[0]);
         indices.push_back(face.mIndices[1]);
@@ -155,21 +155,26 @@ int main() {
             "Debug context was not available even when DEBUG flag was set");
     }
 #endif
-    auto shaderProgram = create_shader_program("../../shaders/basic.vert",
-                                               "../../shaders/basic.frag");
-
-    TriangleMesh triangle_mesh(
-        std::vector<float>(std::begin(vertices), std::end(vertices)),
-        std::vector<unsigned int>(std::begin(indices), std::end(indices)),
-        shaderProgram);
+    auto basic_shader =
+        Shader("../../shaders/basic.vert", "../../shaders/basic.frag");
+    TriangleMesh triangle_mesh(vertices, indices);
+    float t = glfwGetTime();
 
     GL_CALL(glEnable(GL_CULL_FACE));
+    // GL_CALL(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
     while (!glfwWindowShouldClose(window)) {
         handle_window_events(window);
 
         GL_CALL(glClearColor(0.2f, 0.3f, 0.3f, 1.0f));
         GL_CALL(glClear(GL_COLOR_BUFFER_BIT));
 
+        t = glfwGetTime();
+        basic_shader.use();
+        basic_shader.set_vecnf(
+            "uColor",
+            std::vector<float>{(std::sin(t) + 1.0f) / 2.0f,
+                               (std::cos(t) + 1.0f) / 2.0f, 0.5f, 1.0f});
+        basic_shader.use();
         triangle_mesh.draw();
 
         glfwSwapBuffers(window);

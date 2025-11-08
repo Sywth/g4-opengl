@@ -1,20 +1,16 @@
 #include "triangle_mesh.h"
 #include <glad/glad.h>
+#include <cassert>
 #include "debug.h"
 
 TriangleMesh::TriangleMesh(const std::vector<float>& vertices,
-                           const std::vector<unsigned int>& indices,
-                           unsigned int shader_program)
-    : m_shader_program(shader_program),
-      m_indices_count(static_cast<unsigned int>(indices.size())) {
+                           const std::vector<unsigned int>& indices)
+    : m_indices_count(static_cast<unsigned int>(indices.size())) {
     GL_CALL(glGenVertexArrays(1, &m_vao));
     GL_CALL(glGenBuffers(1, &m_vbo));
     GL_CALL(glGenBuffers(1, &m_ebo));
 
-    // Qs : learn what needs to get bound to what first; i.e. can i bind vao
-    // later? [x]
-    // Ans : Not sure but bind the VAO first then bind the buffers and data (but
-    // i think only the EBO needs be bound after)
+    // Bind VAO before EBO
     GL_CALL(glBindVertexArray(m_vao));
 
     GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, m_vbo));
@@ -48,9 +44,16 @@ TriangleMesh::~TriangleMesh() {
 }
 
 void TriangleMesh::draw() const {
-    GL_CALL(glUseProgram(m_shader_program));
     GL_CALL(glBindVertexArray(m_vao));
     GL_CALL(glDrawElements(GL_TRIANGLES, m_indices_count, GL_UNSIGNED_INT, 0));
+
+    // // Misc DEBUG
+    // float t = glfwGetTime();
+    // float r = (sin(t) + 1.0f) / 2.0f;
+    // float g = (cos(t) + 1.0f) / 2.0f;
+    // float b = 0.0f;
+    // glUseProgram(m_shader_program);
+    // glUniform4f(m_u_color_loc, r, g, b, 1.0f);
 
     GL_CALL(glBindVertexArray(0));
 }

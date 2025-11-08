@@ -1,5 +1,4 @@
 #version 330 core
-// TODO : understand this layout & location = 0 field
 layout (location = 0) in vec3 aPos;
 
 void main() {

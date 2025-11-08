@@ -1,8 +1,10 @@
 #include "shader.h"
+#include "debug.h"
+
 #include <glad/glad.h>
 #include <filesystem>
 #include <fstream>
-#include "debug.h"
+#include <span>
 
 std::string get_file_contents(const std::filesystem::path& path) {
     std::ifstream file(path, std::ios::in | std::ios::binary);
@@ -75,4 +77,60 @@ unsigned int create_shader_program(const std::filesystem::path& vertexPath,
     GL_CALL(glDeleteShader(fragmentShader));
 
     return shaderProgram;
+}
+
+int get_uniform_location(unsigned int programId, const std::string& name) {
+    GL_CALL(int location = glGetUniformLocation(programId, name.c_str()));
+    if (location == -1) {
+        LOG_WARN("Uniform '" + name +
+                 "' not found for shader id : " + std::to_string(programId));
+    }
+    return location;
+}
+
+Shader::Shader(const std::filesystem::path& vertexPath,
+               const std::filesystem::path& fragmentPath) {
+    id = create_shader_program(vertexPath, fragmentPath);
+}
+
+Shader::~Shader() {
+    GL_CALL(glDeleteProgram(id));
+}
+
+void Shader::use() {
+    GL_CALL(glUseProgram(id));
+}
+
+void Shader::set_bool(const std::string& name, bool value) const {
+    auto location = get_uniform_location(id, name);
+    GL_CALL(glUniform1i(location, static_cast<int>(value)));
+}
+
+void Shader::set_int(const std::string& name, int value) const {
+    auto location = get_uniform_location(id, name);
+    GL_CALL(glUniform1i(location, value));
+}
+
+void Shader::set_float(const std::string& name, float value) const {
+    auto location = get_uniform_location(id, name);
+    GL_CALL(glUniform1f(location, value));
+}
+
+void Shader::set_vecnf(const std::string& name,
+                       std::span<const float> values) const {
+    auto location = get_uniform_location(id, name);
+    switch (values.size()) {
+        case 2:
+            GL_CALL(glUniform2fv(location, 1, values.data()));
+            break;
+        case 3:
+            GL_CALL(glUniform3fv(location, 1, values.data()));
+            break;
+        case 4:
+            GL_CALL(glUniform4fv(location, 1, values.data()));
+            break;
+        default:
+            throw std::runtime_error(
+                "set_vecnf only supports sizes 2, 3, or 4.");
+    }
 }
