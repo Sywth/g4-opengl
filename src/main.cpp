@@ -5,6 +5,7 @@
 #include "shader.h"
 #include "triangle_mesh.h"
 
+#include <cassert>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -59,15 +60,18 @@ void load_trianuglated_mesh_data(const aiMesh* mesh,
     const float scale = 0.5f;  // DEBUG
     for (unsigned int i = 0; i < mesh->mNumVertices; ++i) {
         const aiVector3D& pos = mesh->mVertices[i];
+
         vertices.push_back(pos.x * scale);
         vertices.push_back(pos.y * scale);
         vertices.push_back(pos.z * scale);
     }
 
-    // By assumption we have 3 vertices per face
     indices.reserve(mesh->mNumFaces * 3);
     for (unsigned int i = 0; i < mesh->mNumFaces; ++i) {
         const aiFace& face = mesh->mFaces[i];
+        assert(("Non-triangulated face found while trying to load mesh data",
+                face.mNumIndices == 3));
+
         indices.push_back(face.mIndices[0]);
         indices.push_back(face.mIndices[1]);
         indices.push_back(face.mIndices[2]);
