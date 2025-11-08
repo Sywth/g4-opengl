@@ -20,17 +20,6 @@
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
 
-// float vertices[] = {
-//     0.5f,  -0.5f, 0.0f,  // Bottom Right
-//     0.5f,  0.5f,  0.0f,  // Top Right
-//     -0.5f, 0.5f,  0.0f,  // Top Left
-//     -0.5f, -0.5f, 0.0f,  // Bottom Left
-// };
-// unsigned int indices[] = {
-//     0, 1, 3,  // First Triangle
-//     1, 2, 3   // Second Triangle
-// };
-
 void handle_window_events(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         LOG_INFO("Escape key pressed, closing window");
@@ -38,76 +27,73 @@ void handle_window_events(GLFWwindow* window) {
     }
 }
 
-bool load_scene(const std::filesystem::path& path,
-                const aiScene** outScene,
-                Assimp::Importer& importer) {
+const aiScene* load_scene(const std::filesystem::path& path,
+                          Assimp::Importer& importer) {
     if (!std::filesystem::exists(path)) {
         LOG_ERROR("No model found at " +
                   std::filesystem::absolute(path).string());
-        return false;
+        return nullptr;
     }
 
-    *outScene = importer.ReadFile(
-        path.string(), aiProcess_Triangulate | aiProcess_JoinIdenticalVertices |
-                           aiProcess_SortByPType);
+    const aiScene* scene = importer.ReadFile(
+        path.string(), aiProcess_Triangulate | aiProcess_FlipUVs);
 
-    if (!(*outScene) || (*outScene)->mFlags & AI_SCENE_FLAGS_INCOMPLETE ||
-        !(*outScene)->mRootNode) {
+    if (!scene || (scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE)) {
         LOG_ERROR("Assimp error: " + std::string(importer.GetErrorString()));
-        return false;
+        return nullptr;
     }
 
-    return true;
+    return scene;
 }
 
-std::tuple<std::vector<float>, std::vector<unsigned int>> load_mesh_data(
-    const aiScene* scene,
-    unsigned int meshIndex) {
-    std::vector<float> vertices;
-    std::vector<unsigned int> indices;
-
-    if (meshIndex >= scene->mNumMeshes) {
-        LOG_ERROR("Mesh index out of bounds");
-        return {vertices, indices};
-    }
-
-    const aiMesh* mesh = scene->mMeshes[meshIndex];
+// This function assumes the mesh was loaded with aiProcess_Triangulate flag
+void load_trianuglated_mesh_data(const aiMesh* mesh,
+                                 std::vector<float>& vertices,
+                                 std::vector<unsigned int>& indices) {
     if (!mesh) {
-        LOG_ERROR("Failed to retrieve mesh");
-        return {vertices, indices};
+        LOG_ERROR("Null mesh provided to load_mesh_data");
+        return;
     }
 
-    // Process vertices
     vertices.reserve(mesh->mNumVertices * 3);
+    const float scale = 0.5f;  // DEBUG
     for (unsigned int i = 0; i < mesh->mNumVertices; ++i) {
         const aiVector3D& pos = mesh->mVertices[i];
-        vertices.push_back(pos.x);
-        vertices.push_back(pos.y);
-        vertices.push_back(pos.z);
+        vertices.push_back(pos.x * scale);
+        vertices.push_back(pos.y * scale);
+        vertices.push_back(pos.z * scale);
     }
 
-    // Process indices
+    // By assumption we have 3 vertices per face
     indices.reserve(mesh->mNumFaces * 3);
     for (unsigned int i = 0; i < mesh->mNumFaces; ++i) {
         const aiFace& face = mesh->mFaces[i];
-        indices.insert(indices.end(), face.mIndices,
-                       face.mIndices + face.mNumIndices);
+        indices.push_back(face.mIndices[0]);
+        indices.push_back(face.mIndices[1]);
+        indices.push_back(face.mIndices[2]);
     }
-
-    return {vertices, indices};
 }
 
+// TODO : Get this mesh loading into my custom triangle mesh class working
+//  - I think it is working its just
+//      - 1) It wrong ordering (must be ccw)
+//      - 2) Its too big
 int main() {
-    // TODO : Get this mesh loading into my custom triangle mesh class working
-    //  - I think it is working its just
-    //      - 1) It wrong ordering (must be ccw)
-    //      - 2) Its too big
     Assimp::Importer importer;
-    const aiScene* scene = nullptr;
-    if (!load_scene("../../assets/models/cube/cube.obj", &scene, importer)) {
+    const aiScene* scene =
+        load_scene("../../assets/models/cube/cube.obj", importer);
+    if (!scene) {
         return -1;
     }
-    auto [vertices, indices] = load_mesh_data(scene, 0);
+
+    aiMesh* mesh = scene->mMeshes[0];
+    if (!mesh) {
+        return -1;
+    }
+
+    std::vector<float> vertices;
+    std::vector<unsigned int> indices;
+    load_trianuglated_mesh_data(mesh, vertices, indices);
 
     GLFWwindow* window;
     if (!glfwInit()) {
