@@ -166,7 +166,7 @@ int main() {
 
     glm::mat4 transform_dbg = glm::mat4(1.0f);
 
-    // GL_CALL(glEnable(GL_CULL_FACE));
+    GL_CALL(glEnable(GL_CULL_FACE));
     GL_CALL(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
     while (!glfwWindowShouldClose(window)) {
         handle_window_events(window);
