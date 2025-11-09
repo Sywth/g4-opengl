@@ -1,6 +1,8 @@
 #pragma once
 #include "logging.h"
 
+#include <glm/glm.hpp>
+
 #include <filesystem>
 #include <span>
 #include <string>
@@ -24,4 +26,5 @@ class Shader {
     void set_float(const std::string& name, float value) const;
     void set_vecnf(const std::string& name,
                    std::span<const float> values) const;
+    void set_mat4f(const std::string& name, const glm::mat4& matrix) const;
 };

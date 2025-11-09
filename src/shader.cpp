@@ -1,6 +1,8 @@
 #include "shader.h"
 #include "debug.h"
 
+#include <glm/gtc/type_ptr.hpp>
+
 #include <glad/glad.h>
 #include <filesystem>
 #include <fstream>
@@ -133,4 +135,10 @@ void Shader::set_vecnf(const std::string& name,
             throw std::runtime_error(
                 "set_vecnf only supports sizes 2, 3, or 4.");
     }
+}
+
+// Assumes column major order
+void Shader::set_mat4f(const std::string& name, const glm::mat4& matrix) const {
+    auto location = get_uniform_location(id, name);
+    GL_CALL(glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix)));
 }

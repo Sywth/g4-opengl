@@ -21,6 +21,9 @@
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 void handle_window_events(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         LOG_INFO("Escape key pressed, closing window");
@@ -48,6 +51,7 @@ const aiScene* load_scene(const std::filesystem::path& path,
 }
 
 // This function assumes the mesh was loaded with aiProcess_Triangulate flag
+//  TODO : Refactor this
 void load_trianuglated_mesh_data(const aiMesh* mesh,
                                  std::vector<float>& vertices,
                                  std::vector<unsigned int>& indices) {
@@ -160,8 +164,10 @@ int main() {
     TriangleMesh triangle_mesh(vertices, indices);
     float t = glfwGetTime();
 
-    GL_CALL(glEnable(GL_CULL_FACE));
-    // GL_CALL(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
+    glm::mat4 transform_dbg = glm::mat4(1.0f);
+
+    // GL_CALL(glEnable(GL_CULL_FACE));
+    GL_CALL(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
     while (!glfwWindowShouldClose(window)) {
         handle_window_events(window);
 
@@ -174,7 +180,11 @@ int main() {
             "uColor",
             std::vector<float>{(std::sin(t) + 1.0f) / 2.0f,
                                (std::cos(t) + 1.0f) / 2.0f, 0.5f, 1.0f});
-        basic_shader.use();
+
+        transform_dbg = glm::rotate(transform_dbg, glm::radians(0.1f),
+                                    glm::vec3(1.0, 1.0, 1.0));
+        basic_shader.set_mat4f("uTransform", transform_dbg);
+
         triangle_mesh.draw();
 
         glfwSwapBuffers(window);
