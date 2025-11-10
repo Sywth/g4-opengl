@@ -1,6 +1,6 @@
 // From https://learnopengl.com/In-Practice/Debugging
 //  Credit to Joey de Vries
-#include "debug.h"
+#include "debug.hpp"
 #include <iostream>
 
 void APIENTRY gl_debug_output(GLenum source,

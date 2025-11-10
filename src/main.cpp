@@ -3,11 +3,11 @@
 #define _ENABLE_GL_CALL_DEBUG
 
 #include "config.hpp"
-#include "debug.h"
+#include "debug.hpp"
 
-#include "logging.h"
-#include "shader.h"
-#include "triangle_mesh.h"
+#include "logging.hpp"
+#include "shader.hpp"
+#include "triangle_mesh.hpp"
 
 #include <cassert>
 #include <filesystem>

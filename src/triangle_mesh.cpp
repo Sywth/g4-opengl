@@ -1,7 +1,8 @@
-#include "triangle_mesh.h"
+#include "triangle_mesh.hpp"
+#include "debug.hpp"
+
 #include <glad/glad.h>
 #include <cassert>
-#include "debug.h"
 
 TriangleMesh::TriangleMesh(const std::vector<float>& vertices,
                            const std::vector<unsigned int>& indices)

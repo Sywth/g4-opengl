@@ -4,7 +4,7 @@
  */
 #pragma once
 #include <glad/glad.h>
-#include "logging.h"
+#include "logging.hpp"
 
 void APIENTRY gl_debug_output(GLenum source,
                               GLenum type,

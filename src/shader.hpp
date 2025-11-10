@@ -1,5 +1,5 @@
 #pragma once
-#include "logging.h"
+#include "logging.hpp"
 
 #include <glm/glm.hpp>
 
