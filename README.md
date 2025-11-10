@@ -1,6 +1,6 @@
 # OpenGL G4
 
-A simple OpenGL project for me to test out from. You will also likely need to modifiy [the FindGLFW3.cmake file ](./cmake/FindGLFW3.cmake) (created by JoeyDeVries) to point the
+A simple OpenGL project for me to test out from. You will also likely need to modifiy [the FindGLFW3.cmake file ](./cmake/FindGLFW3.cmake) (created by JoeyDeVries) to point the correct GLFW install location on your system.
 
 Note : Only works when running from CMake extension panel in VSCode for me personally.
 
