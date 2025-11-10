@@ -159,8 +159,8 @@ int main() {
             "Debug context was not available even when DEBUG flag was set");
     }
 #endif
-    auto basic_shader =
-        Shader("../../shaders/basic.vert", "../../shaders/basic.frag");
+    auto basic_shader = Shader("../../assets/shaders/basic.vert",
+                               "../../assets/shaders/basic.frag");
     TriangleMesh triangle_mesh(vertices, indices);
     float t = glfwGetTime();
 
