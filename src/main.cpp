@@ -2,7 +2,9 @@
 #define _LOG_LEVEL_DEBUG
 #define _ENABLE_GL_CALL_DEBUG
 
+#include "config.hpp"
 #include "debug.h"
+
 #include "logging.h"
 #include "shader.h"
 #include "triangle_mesh.h"
@@ -151,17 +153,18 @@ int main() {
 #ifdef _ENABLE_GL_CALL_DEBUG
     int flags;
     GL_CALL(glGetIntegerv(GL_CONTEXT_FLAGS, &flags));
-    if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
-        GL_CALL(glEnable(GL_DEBUG_OUTPUT));
-        GL_CALL(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS));
-        GL_CALL(glDebugMessageCallback(gl_debug_output, nullptr));
-        GL_CALL(glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE,
-                                      0, nullptr, GL_TRUE));
-        log<LogLevel::Info>("OpenGL debug context enabled");
-    } else {
-        throw std::runtime_error(
+    if ((flags & GL_CONTEXT_FLAG_DEBUG_BIT) == 0) {
+        log<LogLevel::Fatal>(
             "Debug context was not available even when DEBUG flag was set");
+        return -1;
     }
+
+    GL_CALL(glEnable(GL_DEBUG_OUTPUT));
+    GL_CALL(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS));
+    GL_CALL(glDebugMessageCallback(gl_debug_output, nullptr));
+    GL_CALL(glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0,
+                                  nullptr, GL_TRUE));
+    log<LogLevel::Info>("OpenGL debug context enabled");
 #endif
 
     auto basic_shader = Shader("../../assets/shaders/basic.vert",
@@ -169,7 +172,9 @@ int main() {
     TriangleMesh triangle_mesh(vertices, indices);
     float t = glfwGetTime();
 
-    glm::mat4 transform_dbg = glm::mat4(1.0f);
+    glm::mat4 mat_proj = glm::perspective(
+        glm::radians(45.0f), g4::config::display::aspect_ratio,
+        g4::config::display::z_near, g4::config::display::z_far);
 
     GL_CALL(glEnable(GL_CULL_FACE));
     GL_CALL(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
@@ -181,14 +186,14 @@ int main() {
 
         t = glfwGetTime();
         basic_shader.use();
-        basic_shader.set_vecnf(
-            "uColor",
-            std::vector<float>{(std::sin(t) + 1.0f) / 2.0f,
-                               (std::cos(t) + 1.0f) / 2.0f, 0.5f, 1.0f});
+        // basic_shader.set_vecnf(
+        //     "uColor",
+        //     std::vector<float>{(std::sin(t) + 1.0f) / 2.0f,
+        //                        (std::cos(t) + 1.0f) / 2.0f, 0.5f, 1.0f});
 
-        transform_dbg = glm::rotate(transform_dbg, glm::radians(0.1f),
-                                    glm::vec3(1.0, 1.0, 1.0));
-        basic_shader.set_mat4f("uTransform", transform_dbg);
+        // transform_dbg = glm::rotate(transform_dbg, glm::radians(0.1f),
+        //                             glm::vec3(1.0, 1.0, 1.0));
+        // basic_shader.set_mat4f("uTransform", transform_dbg);
 
         triangle_mesh.draw();
 

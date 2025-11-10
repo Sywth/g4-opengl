@@ -9,7 +9,7 @@
 #include <iostream>
 #include <string_view>
 
-enum class LogLevel { Debug, Info, Warn, Error, None };
+enum class LogLevel { Debug, Info, Warn, Error, Fatal, None };
 
 constexpr LogLevel CURRENT_LOG_LEVEL =
 #if defined(_LOG_LEVEL_DEBUG)
@@ -20,6 +20,8 @@ constexpr LogLevel CURRENT_LOG_LEVEL =
     LogLevel::Warn;
 #elif defined(_LOG_LEVEL_ERROR)
     LogLevel::Error;
+#elif defined(_LOG_LEVEL_FATAL)
+    LogLevel::Fatal;
 #else
     LogLevel::Debug;
 #endif
@@ -42,6 +44,9 @@ inline void log(std::string_view msg) {
             break;
         case LogLevel::Error:
             std::cerr << "[ERROR] ";
+            break;
+        case LogLevel::Fatal:
+            std::cerr << "[FATAL] ";
             break;
         default:
             break;
