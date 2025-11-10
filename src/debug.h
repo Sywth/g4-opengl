@@ -1,3 +1,7 @@
+/**
+ * Flags
+ * _ENABLE_GL_CALL_DEBUG : Enable OpenGL call error checking
+ */
 #pragma once
 #include <glad/glad.h>
 #include "logging.h"
@@ -21,7 +25,7 @@ inline void check_gl_error(const char* file, int line) {
 }
 
 // Macro to wrap OpenGL calls with error checking
-#ifdef DEBUG
+#ifdef _ENABLE_GL_CALL_DEBUG
 #define GL_CALL(x)                          \
     do {                                    \
         x;                                  \

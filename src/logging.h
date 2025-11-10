@@ -1,35 +1,53 @@
+/**
+ * Flags
+ * _LOG_LEVEL_<level> : Set the current log level (<level>). Undefined
+ *  defaults to DEBUG.
+ * _LOG_FLUSH : Flush the log output after each message
+ */
+
 #pragma once
-
 #include <iostream>
+#include <string_view>
 
-#if !defined(_LOG_LEVEL_DEBUG) && !defined(_LOG_LEVEL_INFO) && \
-    !defined(_LOG_LEVEL_WARN) && !defined(_LOG_LEVEL_ERROR)
-#define _LOG_LEVEL_DEBUG
-#endif
+enum class LogLevel { Debug, Info, Warn, Error, None };
 
+constexpr LogLevel CURRENT_LOG_LEVEL =
 #if defined(_LOG_LEVEL_DEBUG)
-#define LOG_DEBUG(msg) (std::cout << "[DEBUG] " << (msg) << std::endl)
-#define LOG_INFO(msg) (std::cout << "[INFO] " << (msg) << std::endl)
-#define LOG_WARN(msg) (std::cout << "[WARN] " << (msg) << std::endl)
-#define LOG_ERROR(msg) (std::cerr << "[ERROR] " << (msg) << std::endl)
+    LogLevel::Debug;
 #elif defined(_LOG_LEVEL_INFO)
-#define LOG_DEBUG(msg) ((void)0)
-#define LOG_INFO(msg) (std::cout << "[INFO] " << (msg) << std::endl)
-#define LOG_WARN(msg) (std::cout << "[WARN] " << (msg) << std::endl)
-#define LOG_ERROR(msg) (std::cerr << "[ERROR] " << (msg) << std::endl)
+    LogLevel::Info;
 #elif defined(_LOG_LEVEL_WARN)
-#define LOG_DEBUG(msg) ((void)0)
-#define LOG_INFO(msg) ((void)0)
-#define LOG_WARN(msg) (std::cout << "[WARN] " << (msg) << std::endl)
-#define LOG_ERROR(msg) (std::cerr << "[ERROR] " << (msg) << std::endl)
+    LogLevel::Warn;
 #elif defined(_LOG_LEVEL_ERROR)
-#define LOG_DEBUG(msg) ((void)0)
-#define LOG_INFO(msg) ((void)0)
-#define LOG_WARN(msg) ((void)0)
-#define LOG_ERROR(msg) (std::cerr << "[ERROR] " << (msg) << std::endl)
+    LogLevel::Error;
 #else
-#define LOG_DEBUG(msg) (std::cout << "[DEBUG] " << (msg) << std::endl)
-#define LOG_INFO(msg) (std::cout << "[INFO] " << (msg) << std::endl)
-#define LOG_WARN(msg) (std::cout << "[WARN] " << (msg) << std::endl)
-#define LOG_ERROR(msg) (std::cerr << "[ERROR] " << (msg) << std::endl)
+    LogLevel::Debug;
 #endif
+
+template <LogLevel L>
+inline void log(std::string_view msg) {
+    if constexpr (L < CURRENT_LOG_LEVEL) {
+        return;
+    }
+
+    switch (L) {
+        case LogLevel::Debug:
+            std::cout << "[DEBUG] ";
+            break;
+        case LogLevel::Info:
+            std::cout << "[INFO] ";
+            break;
+        case LogLevel::Warn:
+            std::cout << "[WARN] ";
+            break;
+        case LogLevel::Error:
+            std::cerr << "[ERROR] ";
+            break;
+        default:
+            break;
+    }
+    std::cout << msg << '\n';
+#if defined(_LOG_FLUSH)
+    std::cout.flush();
+#endif
+}

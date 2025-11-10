@@ -77,7 +77,8 @@
         "unordered_set": "cpp",
         "xhash": "cpp",
         "xtree": "cpp",
-        "span": "cpp"
+        "span": "cpp",
+        "cassert": "cpp"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

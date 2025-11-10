@@ -1,7 +1,9 @@
+#define _LOG_FLUSH
 #define _LOG_LEVEL_DEBUG
-#define DEBUG
+#define _ENABLE_GL_CALL_DEBUG
 
 #include "debug.h"
+#include "logging.h"
 #include "shader.h"
 #include "triangle_mesh.h"
 
@@ -26,7 +28,7 @@
 
 void handle_window_events(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-        LOG_INFO("Escape key pressed, closing window");
+        log<LogLevel::Info>("Escape key pressed, closing window");
         glfwSetWindowShouldClose(window, true);
     }
 }
@@ -34,8 +36,8 @@ void handle_window_events(GLFWwindow* window) {
 const aiScene* load_scene(const std::filesystem::path& path,
                           Assimp::Importer& importer) {
     if (!std::filesystem::exists(path)) {
-        LOG_ERROR("No model found at " +
-                  std::filesystem::absolute(path).string());
+        log<LogLevel::Error>("No model found at " +
+                             std::filesystem::absolute(path).string());
         return nullptr;
     }
 
@@ -43,7 +45,8 @@ const aiScene* load_scene(const std::filesystem::path& path,
         path.string(), aiProcess_Triangulate | aiProcess_FlipUVs);
 
     if (!scene || (scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE)) {
-        LOG_ERROR("Assimp error: " + std::string(importer.GetErrorString()));
+        log<LogLevel::Error>("Assimp error: " +
+                             std::string(importer.GetErrorString()));
         return nullptr;
     }
 
@@ -56,7 +59,7 @@ void load_trianuglated_mesh_data(const aiMesh* mesh,
                                  std::vector<float>& vertices,
                                  std::vector<unsigned int>& indices) {
     if (!mesh) {
-        LOG_ERROR("Null mesh provided to load_mesh_data");
+        log<LogLevel::Error>("Null mesh provided to load_mesh_data");
         return;
     }
 
@@ -105,7 +108,7 @@ int main() {
 
     GLFWwindow* window;
     if (!glfwInit()) {
-        LOG_ERROR("Failed to initialize GLFW");
+        log<LogLevel::Error>("Failed to initialize GLFW");
         return -1;
     }
 
@@ -114,23 +117,24 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
-#ifdef DEBUG
-    LOG_INFO("DEBUG flag on");
+#ifdef _ENABLE_GL_CALL_DEBUG
+    log<LogLevel::Info>("DEBUG flag on");
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 #else
-    LOG_INFO("DEBUG flag off");
+    log<LogLevel::Info>("DEBUG flag off");
 #endif
 
-    LOG_INFO("GLFW initialized successfully");
+    log<LogLevel::Info>("GLFW initialized successfully");
     window = glfwCreateWindow(640, 480, "GLFW Window Test", nullptr, nullptr);
     if (!window) {
-        LOG_ERROR("Failed to create window");
+        log<LogLevel::Error>("Failed to create window");
         glfwTerminate();
         return -1;
     }
 
     auto resize_cb = [](GLFWwindow* window, int width, int height) {
-        LOG_INFO(std::format("Window resized to {}x{}", width, height));
+        log<LogLevel::Info>(
+            std::format("Window resized to {}x{}", width, height));
         GL_CALL(glViewport(0, 0, width, height));
     };
 
@@ -138,13 +142,13 @@ int main() {
     glfwSetFramebufferSizeCallback(window, resize_cb);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-        LOG_ERROR("Failed to initialize GLAD");
+        log<LogLevel::Error>("Failed to initialize GLAD");
         glfwTerminate();
         return -1;
     }
 
 // Enable OpenGL debug context if available (Requires 4.3+)
-#ifdef DEBUG
+#ifdef _ENABLE_GL_CALL_DEBUG
     int flags;
     GL_CALL(glGetIntegerv(GL_CONTEXT_FLAGS, &flags));
     if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
@@ -153,12 +157,13 @@ int main() {
         GL_CALL(glDebugMessageCallback(gl_debug_output, nullptr));
         GL_CALL(glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE,
                                       0, nullptr, GL_TRUE));
-        LOG_INFO("OpenGL debug context enabled");
+        log<LogLevel::Info>("OpenGL debug context enabled");
     } else {
         throw std::runtime_error(
             "Debug context was not available even when DEBUG flag was set");
     }
 #endif
+
     auto basic_shader = Shader("../../assets/shaders/basic.vert",
                                "../../assets/shaders/basic.frag");
     TriangleMesh triangle_mesh(vertices, indices);

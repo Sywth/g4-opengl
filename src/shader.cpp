@@ -33,7 +33,8 @@ unsigned int create_shader_module(unsigned int type,
         char infoLog[MAX_SHADER_INFO_LOG_SIZE];
         GL_CALL(glGetShaderInfoLog(shaderId, MAX_SHADER_INFO_LOG_SIZE, nullptr,
                                    infoLog));
-        LOG_ERROR("Shader compilation failed: " + std::string(infoLog));
+        log<LogLevel::Error>("Shader compilation failed: " +
+                             std::string(infoLog));
         GL_CALL(glDeleteShader(shaderId));
         return 0;
     }
@@ -55,10 +56,12 @@ unsigned int create_shader_program(const std::filesystem::path& vertexPath,
         create_shader_module(GL_FRAGMENT_SHADER, fragmentShaderSource);
 
     // log abs path
-    LOG_INFO(std::format("Compiling vertex shader @ {}",
-                         std::filesystem::absolute(vertexPath).string()));
-    LOG_INFO(std::format("Compiling fragment shader @ {}",
-                         std::filesystem::absolute(fragmentPath).string()));
+    log<LogLevel::Info>(
+        std::format("Compiling vertex shader @ {}",
+                    std::filesystem::absolute(vertexPath).string()));
+    log<LogLevel::Info>(
+        std::format("Compiling fragment shader @ {}",
+                    std::filesystem::absolute(fragmentPath).string()));
 
     unsigned int shaderProgram = glCreateProgram();
     GL_CALL(glAttachShader(shaderProgram, vertexShader));
@@ -71,7 +74,8 @@ unsigned int create_shader_program(const std::filesystem::path& vertexPath,
         char infoLog[MAX_SHADER_INFO_LOG_SIZE];
         GL_CALL(glGetProgramInfoLog(shaderProgram, MAX_SHADER_INFO_LOG_SIZE,
                                     nullptr, infoLog));
-        LOG_ERROR("Shader program linking failed: " + std::string(infoLog));
+        log<LogLevel::Error>("Shader program linking failed: " +
+                             std::string(infoLog));
         throw std::runtime_error("Failed to link shader program.");
     }
 
@@ -84,8 +88,9 @@ unsigned int create_shader_program(const std::filesystem::path& vertexPath,
 int get_uniform_location(unsigned int programId, const std::string& name) {
     GL_CALL(int location = glGetUniformLocation(programId, name.c_str()));
     if (location == -1) {
-        LOG_WARN("Uniform '" + name +
-                 "' not found for shader id : " + std::to_string(programId));
+        log<LogLevel::Warn>(
+            "Uniform '" + name +
+            "' not found for shader id : " + std::to_string(programId));
     }
     return location;
 }
