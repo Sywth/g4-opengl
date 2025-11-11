@@ -127,7 +127,9 @@ int main() {
 #endif
 
     log<LogLevel::Info>("GLFW initialized successfully");
-    window = glfwCreateWindow(640, 480, "GLFW Window Test", nullptr, nullptr);
+    window = glfwCreateWindow(g4::config::display::width,
+                              g4::config::display::height, "GLFW Window Test",
+                              nullptr, nullptr);
     if (!window) {
         log<LogLevel::Error>("Failed to create window");
         glfwTerminate();
@@ -170,30 +172,42 @@ int main() {
     auto basic_shader = Shader("../../assets/shaders/basic.vert",
                                "../../assets/shaders/basic.frag");
     TriangleMesh triangle_mesh(vertices, indices);
-    float t = glfwGetTime();
 
+    glm::mat4 mat_model = glm::mat4(1.0f);  // local -> world
+    glm::mat4 mat_view = glm::mat4(1.0f);   // world -> camera
     glm::mat4 mat_proj = glm::perspective(
         glm::radians(45.0f), g4::config::display::aspect_ratio,
-        g4::config::display::z_near, g4::config::display::z_far);
+        g4::config::display::z_near,
+        g4::config::display::z_far);  // camera -> clip (screen)
 
+    float initial_z = -3.0f;
+    mat_view = glm::translate(mat_view, glm::vec3(0.0f, 0.0f, initial_z));
+
+    GL_CALL(glEnable(GL_DEPTH_TEST));
     GL_CALL(glEnable(GL_CULL_FACE));
     GL_CALL(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
     while (!glfwWindowShouldClose(window)) {
         handle_window_events(window);
 
         GL_CALL(glClearColor(0.2f, 0.3f, 0.3f, 1.0f));
-        GL_CALL(glClear(GL_COLOR_BUFFER_BIT));
+        GL_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
-        t = glfwGetTime();
         basic_shader.use();
-        // basic_shader.set_vecnf(
-        //     "uColor",
-        //     std::vector<float>{(std::sin(t) + 1.0f) / 2.0f,
-        //                        (std::cos(t) + 1.0f) / 2.0f, 0.5f, 1.0f});
 
-        // transform_dbg = glm::rotate(transform_dbg, glm::radians(0.1f),
-        //                             glm::vec3(1.0, 1.0, 1.0));
-        // basic_shader.set_mat4f("uTransform", transform_dbg);
+        // DEBUG : animate color
+        float t = glfwGetTime();
+        basic_shader.set_vecnf(
+            "uColor",
+            std::vector<float>{(std::sin(t) + 1.0f) / 2.0f,
+                               (std::cos(t) + 1.0f) / 2.0f, 0.5f, 1.0f});
+
+        // DEBUG : animate model matrix
+        mat_model = glm::rotate(mat_model, glm::radians(1.0f),
+                                glm::vec3(1.0f, 1.0f, 1.0f));
+
+        basic_shader.set_mat4f("uModel", mat_model);
+        basic_shader.set_mat4f("uView", mat_view);
+        basic_shader.set_mat4f("uProj", mat_proj);
 
         triangle_mesh.draw();
 
