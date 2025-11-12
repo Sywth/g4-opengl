@@ -12,13 +12,29 @@
 
 #include "debug.hpp"
 
-Camera::Camera(glm::vec3 initial_position, glm::vec3 initial_world_lookat)
-    : m_position(initial_position), m_orientation(glm::quat()) {
-    std::cout << "Hello from Camera constructor" << std::endl;
-    log<LogLevel::Debug>("Hello from Camera constructor");
-    log<LogLevel::Debug>(std::format("Quat : <{:.2}, {:.2}, {:.2}, {:.2}>",
-                                     m_orientation.w, m_orientation.x,
-                                     m_orientation.y, m_orientation.z));
+Camera::Camera(glm::vec3 initial_world_pos, glm::vec3 initial_world_lookat)
+    : m_position(initial_world_pos), m_orientation(1, 0, 0, 0) {
+    // // gram-schmidt to build camera basis vectors
+    // glm::vec3 forward_world_space =
+    //     glm::normalize(initial_world_lookat - initial_world_pos);
+    // glm::vec3 right_world_space =
+    //     glm::normalize(glm::cross(VEC3_UP_WORLD, forward_world_space));
+    // glm::vec3 up_world_space =
+    //     glm::normalize(glm::cross(forward_world_space, right_world_space));
+
+    look_at(initial_world_lookat);
 }
 
 Camera::~Camera() {}
+
+glm::mat4 Camera::get_view_matrix() const {
+    return m_view_matrix;
+}
+
+void Camera::look_at(glm::vec3 world_lookat) {
+    m_view_matrix = glm::lookAt(m_position, world_lookat, VEC3_UP_WORLD);
+}
+
+void Camera::set_position(glm::vec3 world_pos) {
+    m_position = world_pos;
+}

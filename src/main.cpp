@@ -188,11 +188,8 @@ int main() {
     GL_CALL(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
 
     glm::vec3 offsets[] = {
-        glm::vec3(-1.0f, -1.0f, 0.0f),
-        glm::vec3(1.0f, -1.0f, 0.0f),
-        glm::vec3(-1.0f, 1.0f, 0.0f),
-        glm::vec3(1.0f, 1.0f, 0.0f),
-    };
+        glm::vec3(-0.82, 0.34, 0.12f), glm::vec3(0.45f, -0.12f, -0.34f),
+        glm::vec3(0.12f, 0.56f, 0.78f), glm::vec3(-0.34f, -0.78f, 0.45f)};
 
     Camera camera(glm::vec3(0.0f, 0.0f, initial_z),
                   glm::vec3(0.0f, 0.0f, 0.0f));
@@ -207,19 +204,28 @@ int main() {
 
         // DEBUG : animate color
         float t = glfwGetTime();
+        const float radius = 5.0f;
         basic_shader.set_vecnf(
             "uColor",
-            std::vector<float>{(std::sin(t) + 1.0f) / 2.0f,
-                               (std::cos(t) + 1.0f) / 2.0f, 0.5f, 1.0f});
+            std::vector<float>{(std::sinf(t) + 1.0f) / 2.0f,
+                               (std::cosf(t) + 1.0f) / 2.0f, 0.5f, 1.0f});
 
+        // DEBUG : animate model matrix
         for (const auto& offset : offsets) {
-            // DEBUG : animate model matrix
-            mat_model =
-                glm::rotate(mat_model, glm::radians(static_cast<float>(1e-1)),
-                            glm::vec3(1.0f, 1.0f, 1.0f));
+            // Rotate the model
+            mat_model = glm::rotate(mat_model, glm::radians(0.1f),
+                                    glm::vec3(1.0f, 1.0f, 1.0f));
+
+            // Make the camera worble (ciruclar headbob)
+            camera.look_at(glm::vec3(std::cosf(t), std::sinf(t), 0.0f));
+
+            // Rotate the camera around the origin* (well rotate around the
+            // lookat)
+            camera.set_position(
+                glm::vec3(std::sinf(t) * radius, 0, std::cosf(t) * radius));
 
             basic_shader.set_mat4f("uModel", glm::translate(mat_model, offset));
-            basic_shader.set_mat4f("uView", mat_view);
+            basic_shader.set_mat4f("uView", camera.get_view_matrix());
             basic_shader.set_mat4f("uProj", mat_proj);
 
             triangle_mesh.draw();
