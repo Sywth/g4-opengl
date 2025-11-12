@@ -1,4 +1,8 @@
 #pragma once
+
+#define _LOG_LEVEL_DEBUG
+#define _LOG_FLUSH
+
 #include "logging.hpp"
 
 #include <glm/glm.hpp>

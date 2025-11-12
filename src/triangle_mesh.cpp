@@ -47,14 +47,5 @@ TriangleMesh::~TriangleMesh() {
 void TriangleMesh::draw() const {
     GL_CALL(glBindVertexArray(m_vao));
     GL_CALL(glDrawElements(GL_TRIANGLES, m_indices_count, GL_UNSIGNED_INT, 0));
-
-    // // Misc DEBUG
-    // float t = glfwGetTime();
-    // float r = (sin(t) + 1.0f) / 2.0f;
-    // float g = (cos(t) + 1.0f) / 2.0f;
-    // float b = 0.0f;
-    // glUseProgram(m_shader_program);
-    // glUniform4f(m_u_color_loc, r, g, b, 1.0f);
-
     GL_CALL(glBindVertexArray(0));
 }

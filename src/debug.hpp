@@ -3,8 +3,13 @@
  * _ENABLE_GL_CALL_DEBUG : Enable OpenGL call error checking
  */
 #pragma once
-#include <glad/glad.h>
+
+#define _LOG_LEVEL_DEBUG
+#define _LOG_FLUSH
+
 #include "logging.hpp"
+
+#include <glad/glad.h>
 
 void APIENTRY gl_debug_output(GLenum source,
                               GLenum type,
@@ -18,7 +23,7 @@ void APIENTRY gl_debug_output(GLenum source,
 inline void check_gl_error(const char* file, int line) {
     GLenum error;
     while ((error = glGetError()) != GL_NO_ERROR) {
-        std::cerr << "[GL CALL ERR] at " << file << ":" << line
+        std::cout << "[GL CALL ERR] at " << file << ":" << line
                   << " - Error code: 0x" << std::hex << error << std::dec
                   << std::endl;
     }

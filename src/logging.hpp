@@ -43,15 +43,17 @@ inline void log(std::string_view msg) {
             std::cout << "[WARN] ";
             break;
         case LogLevel::Error:
-            std::cerr << "[ERROR] ";
+            std::cout << "[ERROR] ";
             break;
         case LogLevel::Fatal:
-            std::cerr << "[FATAL] ";
+            std::cout << "[FATAL] ";
             break;
         default:
             break;
     }
+
     std::cout << msg << '\n';
+
 #if defined(_LOG_FLUSH)
     std::cout.flush();
 #endif

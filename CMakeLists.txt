@@ -17,6 +17,7 @@ add_executable(g4
     src/shader.cpp
     src/triangle_mesh.cpp
     src/debug.cpp
+    src/camera.cpp
     vendor/glad.c
 )
 

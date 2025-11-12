@@ -78,7 +78,8 @@
         "xhash": "cpp",
         "xtree": "cpp",
         "span": "cpp",
-        "cassert": "cpp"
+        "cassert": "cpp",
+        "*.in": "cpp"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

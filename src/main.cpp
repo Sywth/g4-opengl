@@ -2,9 +2,9 @@
 #define _LOG_LEVEL_DEBUG
 #define _ENABLE_GL_CALL_DEBUG
 
+#include "camera.hpp"
 #include "config.hpp"
 #include "debug.hpp"
-
 #include "logging.hpp"
 #include "shader.hpp"
 #include "triangle_mesh.hpp"
@@ -180,12 +180,23 @@ int main() {
         g4::config::display::z_near,
         g4::config::display::z_far);  // camera -> clip (screen)
 
-    float initial_z = -3.0f;
+    float initial_z = -8.0f;
     mat_view = glm::translate(mat_view, glm::vec3(0.0f, 0.0f, initial_z));
 
     GL_CALL(glEnable(GL_DEPTH_TEST));
     GL_CALL(glEnable(GL_CULL_FACE));
     GL_CALL(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
+
+    glm::vec3 offsets[] = {
+        glm::vec3(-1.0f, -1.0f, 0.0f),
+        glm::vec3(1.0f, -1.0f, 0.0f),
+        glm::vec3(-1.0f, 1.0f, 0.0f),
+        glm::vec3(1.0f, 1.0f, 0.0f),
+    };
+
+    Camera camera(glm::vec3(0.0f, 0.0f, initial_z),
+                  glm::vec3(0.0f, 0.0f, 0.0f));
+
     while (!glfwWindowShouldClose(window)) {
         handle_window_events(window);
 
@@ -201,15 +212,18 @@ int main() {
             std::vector<float>{(std::sin(t) + 1.0f) / 2.0f,
                                (std::cos(t) + 1.0f) / 2.0f, 0.5f, 1.0f});
 
-        // DEBUG : animate model matrix
-        mat_model = glm::rotate(mat_model, glm::radians(1.0f),
-                                glm::vec3(1.0f, 1.0f, 1.0f));
+        for (const auto& offset : offsets) {
+            // DEBUG : animate model matrix
+            mat_model =
+                glm::rotate(mat_model, glm::radians(static_cast<float>(1e-1)),
+                            glm::vec3(1.0f, 1.0f, 1.0f));
 
-        basic_shader.set_mat4f("uModel", mat_model);
-        basic_shader.set_mat4f("uView", mat_view);
-        basic_shader.set_mat4f("uProj", mat_proj);
+            basic_shader.set_mat4f("uModel", glm::translate(mat_model, offset));
+            basic_shader.set_mat4f("uView", mat_view);
+            basic_shader.set_mat4f("uProj", mat_proj);
 
-        triangle_mesh.draw();
+            triangle_mesh.draw();
+        }
 
         glfwSwapBuffers(window);
         glfwPollEvents();
