@@ -1,37 +1,22 @@
-/**
- * Flags
- * _LOG_LEVEL_<level> : Set the current log level (<level>). Undefined
- *  defaults to DEBUG.
- * _LOG_FLUSH : Flush the log output after each message
- */
-
 #pragma once
 #include <iostream>
 #include <string_view>
 
 enum class LogLevel { Debug, Info, Warn, Error, Fatal, None };
 
-constexpr LogLevel CURRENT_LOG_LEVEL =
-#if defined(_LOG_LEVEL_DEBUG)
-    LogLevel::Debug;
-#elif defined(_LOG_LEVEL_INFO)
-    LogLevel::Info;
-#elif defined(_LOG_LEVEL_WARN)
-    LogLevel::Warn;
-#elif defined(_LOG_LEVEL_ERROR)
-    LogLevel::Error;
-#elif defined(_LOG_LEVEL_FATAL)
-    LogLevel::Fatal;
-#else
-    LogLevel::Debug;
-#endif
+template <typename = void>
+struct LogConfig {
+    static constexpr LogLevel current_log_level = LogLevel::Info;
+    static constexpr bool flush_log = true;
+};
 
 template <LogLevel L>
-inline void log(std::string_view msg) {
-    if constexpr (L < CURRENT_LOG_LEVEL) {
+void log(std::string_view msg) {
+    if constexpr (L < LogConfig<>::current_log_level) {
         return;
     }
 
+    // This part will only be compiled for log levels >= current_log_level
     switch (L) {
         case LogLevel::Debug:
             std::cout << "[DEBUG] ";
@@ -54,7 +39,7 @@ inline void log(std::string_view msg) {
 
     std::cout << msg << '\n';
 
-#if defined(_LOG_FLUSH)
-    std::cout.flush();
-#endif
+    if constexpr (LogConfig<>::flush_log) {
+        std::cout.flush();
+    }
 }

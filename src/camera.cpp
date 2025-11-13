@@ -1,6 +1,3 @@
-#define _LOG_LEVEL_DEBUG
-#define _LOG_FLUSH
-
 #include "camera.hpp"
 #include "logging.hpp"
 

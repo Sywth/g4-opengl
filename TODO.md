@@ -1,4 +1,4 @@
-- [ ] Modifiy `./src/logging.hpp` & `./src/debug.hpp` to move away from macros
+- [ ] Modifiy `./src/debug.hpp` to not use any macros; prefer `constexpr` and `template` techniques
 - [ ] Modifiy camera code to be better designed; have less state and modifications and actually use the quaternion orientation
 - [ ] Finish step https://learnopengl.com/Getting-started/Camera and really understand the gram-schmidt process and try using that instead of just using glm::lookAt
 - [ ] Add camera movement

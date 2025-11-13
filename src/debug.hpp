@@ -3,10 +3,6 @@
  * _ENABLE_GL_CALL_DEBUG : Enable OpenGL call error checking
  */
 #pragma once
-
-#define _LOG_LEVEL_DEBUG
-#define _LOG_FLUSH
-
 #include "logging.hpp"
 
 #include <glad/glad.h>

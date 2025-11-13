@@ -1,5 +1,3 @@
-#define _LOG_FLUSH
-#define _LOG_LEVEL_DEBUG
 #define _ENABLE_GL_CALL_DEBUG
 
 #include "camera.hpp"
