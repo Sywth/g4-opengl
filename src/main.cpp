@@ -1,6 +1,7 @@
 #include "camera.hpp"
 #include "config.hpp"
 #include "gl_debug.hpp"
+#include "gl_debug_config.hpp"
 #include "logger.hpp"
 #include "shader.hpp"
 #include "triangle_mesh.hpp"
@@ -115,12 +116,12 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
-#ifdef _ENABLE_GL_CALL_DEBUG
-    log<LogLevel::Info>("DEBUG flag on");
-    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
-#else
-    log<LogLevel::Info>("DEBUG flag off");
-#endif
+    if constexpr (gl_debug_enabled) {
+        log<LogLevel::Info>("DEBUG flag on");
+        glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+    } else {
+        log<LogLevel::Info>("DEBUG flag off");
+    }
 
     log<LogLevel::Info>("GLFW initialized successfully");
     window = glfwCreateWindow(g4::config::display::width,
@@ -147,23 +148,23 @@ int main() {
         return -1;
     }
 
-// Enable OpenGL debug context if available (Requires 4.3+)
-#ifdef _ENABLE_GL_CALL_DEBUG
-    int flags;
-    GL_CALL(glGetIntegerv(GL_CONTEXT_FLAGS, &flags));
-    if ((flags & GL_CONTEXT_FLAG_DEBUG_BIT) == 0) {
-        log<LogLevel::Fatal>(
-            "Debug context was not available even when DEBUG flag was set");
-        return -1;
-    }
+    // Enable OpenGL debug context if available (Requires 4.3+)
+    if constexpr (gl_debug_enabled) {
+        int flags;
+        GL_CALL(glGetIntegerv(GL_CONTEXT_FLAGS, &flags));
+        if ((flags & GL_CONTEXT_FLAG_DEBUG_BIT) == 0) {
+            log<LogLevel::Fatal>(
+                "Debug context was not available even when DEBUG flag was set");
+            return -1;
+        }
 
-    GL_CALL(glEnable(GL_DEBUG_OUTPUT));
-    GL_CALL(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS));
-    GL_CALL(glDebugMessageCallback(gl_debug_output, nullptr));
-    GL_CALL(glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0,
-                                  nullptr, GL_TRUE));
-    log<LogLevel::Info>("OpenGL debug context enabled");
-#endif
+        GL_CALL(glEnable(GL_DEBUG_OUTPUT));
+        GL_CALL(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS));
+        GL_CALL(glDebugMessageCallback(gl_debug_output, nullptr));
+        GL_CALL(glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE,
+                                      0, nullptr, GL_TRUE));
+        log<LogLevel::Info>("OpenGL debug context enabled");
+    }
 
     auto basic_shader = Shader("../../assets/shaders/basic.vert",
                                "../../assets/shaders/basic.frag");
