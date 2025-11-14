@@ -1,5 +1,5 @@
 #include "camera.hpp"
-#include "logging.hpp"
+#include "logger.hpp"
 
 #include <format>
 #include <iostream>
@@ -7,7 +7,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-#include "debug.hpp"
+#include "gl_debug.hpp"
 
 Camera::Camera(glm::vec3 initial_world_pos, glm::vec3 initial_world_lookat)
     : m_position(initial_world_pos), m_orientation(1, 0, 0, 0) {
@@ -29,7 +29,7 @@ glm::mat4 Camera::get_view_matrix() const {
 }
 
 void Camera::look_at(glm::vec3 world_lookat) {
-    m_view_matrix = glm::lookAt(m_position, world_lookat, VEC3_UP_WORLD);
+    m_view_matrix = glm::lookAt(m_position, world_lookat, vec3_up_world);
 }
 
 void Camera::set_position(glm::vec3 world_pos) {

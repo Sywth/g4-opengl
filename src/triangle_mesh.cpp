@@ -1,5 +1,5 @@
 #include "triangle_mesh.hpp"
-#include "debug.hpp"
+#include "gl_debug.hpp"
 
 #include <glad/glad.h>
 #include <cassert>

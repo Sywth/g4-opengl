@@ -1,9 +1,7 @@
-#define _ENABLE_GL_CALL_DEBUG
-
 #include "camera.hpp"
 #include "config.hpp"
-#include "debug.hpp"
-#include "logging.hpp"
+#include "gl_debug.hpp"
+#include "logger.hpp"
 #include "shader.hpp"
 #include "triangle_mesh.hpp"
 

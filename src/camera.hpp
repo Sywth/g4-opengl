@@ -3,9 +3,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-inline constexpr glm::vec3 VEC3_UP_WORLD{0.0f, 1.0f, 0.0f};
-inline constexpr glm::vec3 VEC3_RIGHT_WORLD{1.0f, 0.0f, 0.0f};
-inline constexpr glm::vec3 VEC3_FORWARD_WORLD{0.0f, 0.0f, -1.0f};
+inline constexpr glm::vec3 vec3_up_world{0.0f, 1.0f, 0.0f};
+inline constexpr glm::vec3 vec3_right_world{1.0f, 0.0f, 0.0f};
+inline constexpr glm::vec3 vec3_forward_world{0.0f, 0.0f, -1.0f};
 
 class Camera {
    public:

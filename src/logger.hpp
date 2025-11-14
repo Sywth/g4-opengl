@@ -1,18 +1,12 @@
 #pragma once
+#include "logger_config.hpp"
+
 #include <iostream>
 #include <string_view>
 
-enum class LogLevel { Debug, Info, Warn, Error, Fatal, None };
-
-template <typename = void>
-struct LogConfig {
-    static constexpr LogLevel current_log_level = LogLevel::Info;
-    static constexpr bool flush_log = true;
-};
-
 template <LogLevel L>
 void log(std::string_view msg) {
-    if constexpr (L < LogConfig<>::current_log_level) {
+    if constexpr (L < current_log_level) {
         return;
     }
 
@@ -39,7 +33,7 @@ void log(std::string_view msg) {
 
     std::cout << msg << '\n';
 
-    if constexpr (LogConfig<>::flush_log) {
+    if constexpr (flush_log) {
         std::cout.flush();
     }
 }

@@ -1,5 +1,5 @@
 #include "shader.hpp"
-#include "debug.hpp"
+#include "gl_debug.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -23,7 +23,9 @@ std::string get_file_contents(const std::filesystem::path& path) {
 unsigned int create_shader_module(unsigned int type,
                                   const std::string& source) {
     const char* source_code_cstr = source.c_str();
-    unsigned int shaderId = GL_CALL(glCreateShader(type));
+
+    unsigned int shaderId;
+    GL_CALL(shaderId = glCreateShader(type));
     GL_CALL(glShaderSource(shaderId, 1, &source_code_cstr, nullptr));
     GL_CALL(glCompileShader(shaderId));
 
@@ -86,7 +88,8 @@ unsigned int create_shader_program(const std::filesystem::path& vertexPath,
 }
 
 int get_uniform_location(unsigned int programId, const std::string& name) {
-    GL_CALL(int location = glGetUniformLocation(programId, name.c_str()));
+    int location;
+    GL_CALL(location = glGetUniformLocation(programId, name.c_str()));
     if (location == -1) {
         log<LogLevel::Warn>(
             "Uniform '" + name +

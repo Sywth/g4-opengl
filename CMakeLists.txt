@@ -12,14 +12,22 @@ find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
 # find_package(assimp REQUIRED) # TODO Figure out at some point why this breaks cmake 
 
-add_executable(g4
-    src/main.cpp
-    src/shader.cpp
-    src/triangle_mesh.cpp
-    src/debug.cpp
-    src/camera.cpp
+# Compiles all files in ./src automatically
+file(GLOB_RECURSE SRC_FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+)
+
+# You must manually add vendor files here
+set(VENDOR_FILES
     vendor/glad.c
 )
+
+add_executable(g4
+    ${SRC_FILES}
+    ${VENDOR_FILES}
+)
+
 
 target_include_directories(g4 PRIVATE dependencies include)
 target_link_libraries(

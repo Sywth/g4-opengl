@@ -1,9 +1,6 @@
-/**
- * Flags
- * _ENABLE_GL_CALL_DEBUG : Enable OpenGL call error checking
- */
 #pragma once
-#include "logging.hpp"
+#include "gl_debug_config.hpp"
+#include "logger.hpp"
 
 #include <glad/glad.h>
 
@@ -25,13 +22,12 @@ inline void check_gl_error(const char* file, int line) {
     }
 }
 
-// Macro to wrap OpenGL calls with error checking
-#ifdef _ENABLE_GL_CALL_DEBUG
-#define GL_CALL(x)                          \
-    do {                                    \
-        x;                                  \
-        check_gl_error(__FILE__, __LINE__); \
+#define GL_CALL(x)                              \
+    do {                                        \
+        if constexpr (gl_call_debug_enabled) {  \
+            x;                                  \
+            check_gl_error(__FILE__, __LINE__); \
+        } else {                                \
+            x;                                  \
+        }                                       \
     } while (0)
-#else
-#define GL_CALL(x) x
-#endif
