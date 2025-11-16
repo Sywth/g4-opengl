@@ -13,13 +13,16 @@ void APIENTRY gl_debug_output(GLenum source,
                               const char* message,
                               const void* userParam);
 
+const char* translate_gl_get_error_enum_message(GLenum error_code);
+
 // TODO : Translate the OpenGL error code to human-readable string
 inline void check_gl_error(const char* file, int line) {
     GLenum error;
     while ((error = glGetError()) != GL_NO_ERROR) {
         std::cout << "[GL CALL ERR] at " << file << ":" << line
                   << " - Error code: 0x" << std::hex << error << std::dec
-                  << std::endl;
+                  << "\n\t(" << translate_gl_get_error_enum_message(error)
+                  << ")" << std::endl;
     }
 }
 

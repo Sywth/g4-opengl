@@ -89,22 +89,6 @@ void load_trianuglated_mesh_data(const aiMesh* mesh,
 //      - 1) It wrong ordering (must be ccw)
 //      - 2) Its too big
 int main() {
-    Assimp::Importer importer;
-    const aiScene* scene =
-        load_scene("../../assets/models/cube/cube.obj", importer);
-    if (!scene) {
-        return -1;
-    }
-
-    aiMesh* mesh = scene->mMeshes[0];
-    if (!mesh) {
-        return -1;
-    }
-
-    std::vector<float> vertices;
-    std::vector<unsigned int> indices;
-    load_trianuglated_mesh_data(mesh, vertices, indices);
-
     GLFWwindow* window;
     if (!glfwInit()) {
         log<LogLevel::Error>("Failed to initialize GLFW");
@@ -166,70 +150,93 @@ int main() {
         log<LogLevel::Info>("OpenGL debug context enabled");
     }
 
-    auto basic_shader = Shader("../../assets/shaders/basic.vert",
-                               "../../assets/shaders/basic.frag");
-    TriangleMesh triangle_mesh(vertices, indices);
-
-    glm::mat4 mat_model = glm::mat4(1.0f);  // local -> world
-    glm::mat4 mat_view = glm::mat4(1.0f);   // world -> camera
-    glm::mat4 mat_proj = glm::perspective(
-        glm::radians(45.0f), g4::config::display::aspect_ratio,
-        g4::config::display::z_near,
-        g4::config::display::z_far);  // camera -> clip (screen)
-
-    float initial_z = -8.0f;
-    mat_view = glm::translate(mat_view, glm::vec3(0.0f, 0.0f, initial_z));
-
     GL_CALL(glEnable(GL_DEPTH_TEST));
     GL_CALL(glEnable(GL_CULL_FACE));
     GL_CALL(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
-
-    glm::vec3 offsets[] = {
-        glm::vec3(-0.82, 0.34, 0.12f), glm::vec3(0.45f, -0.12f, -0.34f),
-        glm::vec3(0.12f, 0.56f, 0.78f), glm::vec3(-0.34f, -0.78f, 0.45f)};
-
-    Camera camera(glm::vec3(0.0f, 0.0f, initial_z),
-                  glm::vec3(0.0f, 0.0f, 0.0f));
-
-    while (!glfwWindowShouldClose(window)) {
-        handle_window_events(window);
-
-        GL_CALL(glClearColor(0.2f, 0.3f, 0.3f, 1.0f));
-        GL_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-
-        basic_shader.use();
-
-        // DEBUG : animate color
-        float t = glfwGetTime();
-        const float radius = 5.0f;
-        basic_shader.set_vecnf(
-            "uColor",
-            std::vector<float>{(std::sinf(t) + 1.0f) / 2.0f,
-                               (std::cosf(t) + 1.0f) / 2.0f, 0.5f, 1.0f});
-
-        // DEBUG : animate model matrix
-        for (const auto& offset : offsets) {
-            // Rotate the model
-            mat_model = glm::rotate(mat_model, glm::radians(0.1f),
-                                    glm::vec3(1.0f, 1.0f, 1.0f));
-
-            // Make the camera worble (ciruclar headbob)
-            camera.look_at(glm::vec3(std::cosf(t), std::sinf(t), 0.0f));
-
-            // Rotate the camera around the origin* (well rotate around the
-            // lookat)
-            camera.set_position(
-                glm::vec3(std::sinf(t) * radius, 0, std::cosf(t) * radius));
-
-            basic_shader.set_mat4f("uModel", glm::translate(mat_model, offset));
-            basic_shader.set_mat4f("uView", camera.get_view_matrix());
-            basic_shader.set_mat4f("uProj", mat_proj);
-
-            triangle_mesh.draw();
+    {
+        // --- Loading Data ---
+        Assimp::Importer importer;
+        const aiScene* scene =
+            load_scene("../../assets/models/cube/cube.obj", importer);
+        if (!scene) {
+            return -1;
         }
 
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+        aiMesh* mesh = scene->mMeshes[0];
+        if (!mesh) {
+            return -1;
+        }
+
+        std::vector<float> vertices;
+        std::vector<unsigned int> indices;
+        load_trianuglated_mesh_data(mesh, vertices, indices);
+
+        TriangleMesh triangle_mesh(vertices, indices);
+
+        // --- Shaders ---
+        auto basic_shader = Shader("../../assets/shaders/basic.vert",
+                                   "../../assets/shaders/basic.frag");
+
+        // --- Camera ---
+        glm::mat4 mat_model = glm::mat4(1.0f);  // local -> world
+        glm::mat4 mat_view = glm::mat4(1.0f);   // world -> camera
+        glm::mat4 mat_proj = glm::perspective(
+            glm::radians(45.0f), g4::config::display::aspect_ratio,
+            g4::config::display::z_near,
+            g4::config::display::z_far);  // camera -> clip (screen)
+
+        float initial_z = -8.0f;
+        mat_view = glm::translate(mat_view, glm::vec3(0.0f, 0.0f, initial_z));
+
+        glm::vec3 offsets[] = {
+            glm::vec3(-0.82, 0.34, 0.12f), glm::vec3(0.45f, -0.12f, -0.34f),
+            glm::vec3(0.12f, 0.56f, 0.78f), glm::vec3(-0.34f, -0.78f, 0.45f)};
+
+        Camera camera(glm::vec3(0.0f, 0.0f, initial_z),
+                      glm::vec3(0.0f, 0.0f, 0.0f));
+
+        //   --- Render Loop ---
+        while (!glfwWindowShouldClose(window)) {
+            handle_window_events(window);
+
+            GL_CALL(glClearColor(0.2f, 0.3f, 0.3f, 1.0f));
+            GL_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+
+            basic_shader.use();
+
+            // DEBUG : animate color
+            float t = glfwGetTime();
+            const float radius = 5.0f;
+            basic_shader.set_vecnf(
+                "uColor",
+                std::vector<float>{(std::sinf(t) + 1.0f) / 2.0f,
+                                   (std::cosf(t) + 1.0f) / 2.0f, 0.5f, 1.0f});
+
+            // DEBUG : animate model matrix
+            for (const auto& offset : offsets) {
+                // Rotate the model
+                mat_model = glm::rotate(mat_model, glm::radians(0.1f),
+                                        glm::vec3(1.0f, 1.0f, 1.0f));
+
+                // Make the camera worble (ciruclar headbob)
+                camera.look_at(glm::vec3(std::cosf(t), std::sinf(t), 0.0f));
+
+                // Rotate the camera around the origin* (well rotate around the
+                // lookat)
+                camera.set_position(
+                    glm::vec3(std::sinf(t) * radius, 0, std::cosf(t) * radius));
+
+                basic_shader.set_mat4f("uModel",
+                                       glm::translate(mat_model, offset));
+                basic_shader.set_mat4f("uView", camera.get_view_matrix());
+                basic_shader.set_mat4f("uProj", mat_proj);
+
+                triangle_mesh.draw();
+            }
+
+            glfwSwapBuffers(window);
+            glfwPollEvents();
+        }
     }
 
     glfwTerminate();

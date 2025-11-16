@@ -1,5 +1,6 @@
 #include "camera.hpp"
 #include "logger.hpp"
+#include "math.hpp"
 
 #include <format>
 #include <iostream>
@@ -9,6 +10,7 @@
 
 #include "gl_debug.hpp"
 
+// TODO : Reimplement this WIHTOUT using glm::lookAt
 Camera::Camera(glm::vec3 initial_world_pos, glm::vec3 initial_world_lookat)
     : m_position(initial_world_pos), m_orientation(1, 0, 0, 0) {
     // // gram-schmidt to build camera basis vectors
@@ -29,7 +31,7 @@ glm::mat4 Camera::get_view_matrix() const {
 }
 
 void Camera::look_at(glm::vec3 world_lookat) {
-    m_view_matrix = glm::lookAt(m_position, world_lookat, vec3_up_world);
+    m_view_matrix = g4::math::look_at(m_position, world_lookat, vec3_up_world);
 }
 
 void Camera::set_position(glm::vec3 world_pos) {
