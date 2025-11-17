@@ -1,6 +1,6 @@
 // Note : assume that opengl debugging context has be setup elsewhere
 #pragma once
-#include "gl_debug_config.hpp"
+#include "_config_debug.hpp"
 #include "logger.hpp"
 
 #include <glad/glad.h>
@@ -28,7 +28,7 @@ inline void check_gl_error(const char* file, int line) {
 
 #define GL_CALL(x)                              \
     do {                                        \
-        if constexpr (gl_debug_enabled) {       \
+        if constexpr (debug_enabled) {          \
             x;                                  \
             check_gl_error(__FILE__, __LINE__); \
         } else {                                \

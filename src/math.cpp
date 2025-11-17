@@ -52,5 +52,4 @@ glm::mat4 look_at(glm::vec3 loc, glm::vec3 target, glm::vec3 world_up) {
 
     return look_at;
 }
-
 }  // namespace g4::math

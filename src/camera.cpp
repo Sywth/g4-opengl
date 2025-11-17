@@ -9,31 +9,41 @@
 #include <glm/gtc/quaternion.hpp>
 
 #include "gl_debug.hpp"
-
-// TODO : Reimplement this WIHTOUT using glm::lookAt
-Camera::Camera(glm::vec3 initial_world_pos, glm::vec3 initial_world_lookat)
-    : m_position(initial_world_pos), m_orientation(1, 0, 0, 0) {
-    // // gram-schmidt to build camera basis vectors
-    // glm::vec3 forward_world_space =
-    //     glm::normalize(initial_world_lookat - initial_world_pos);
-    // glm::vec3 right_world_space =
-    //     glm::normalize(glm::cross(VEC3_UP_WORLD, forward_world_space));
-    // glm::vec3 up_world_space =
-    //     glm::normalize(glm::cross(forward_world_space, right_world_space));
-
-    look_at(initial_world_lookat);
-}
+Camera::Camera(glm::vec3 initial_world_pos, glm::vec3 initial_world_target)
+    : m_world_pos(initial_world_pos),
+      m_world_target(initial_world_target),
+      m_world_forward(
+          glm::normalize(initial_world_target - initial_world_pos)) {}
 
 Camera::~Camera() {}
 
+void Camera::set_world_pos(glm::vec3 world_pos) {
+    m_world_pos = world_pos;
+    m_world_target = m_world_pos + m_world_forward;
+}
+
+void Camera::set_world_forward(glm::vec3 world_forward) {
+    m_world_forward = glm::normalize(world_forward);
+    m_world_target = m_world_pos + m_world_forward;
+}
+
+void Camera::set_world_target(glm::vec3 world_target) {
+    m_world_target = world_target;
+    m_world_forward = glm::normalize(m_world_target - m_world_pos);
+}
+
 glm::mat4 Camera::get_view_matrix() const {
-    return m_view_matrix;
-}
+    // gives warnign if forward is nearly parallel with world up vector
+    if constexpr (debug_enabled) {
+        glm::vec3 forward = glm::normalize(m_world_target - m_world_pos);
+        float dot = glm::abs(glm::dot(forward, vec3_up_world));
 
-void Camera::look_at(glm::vec3 world_lookat) {
-    m_view_matrix = g4::math::look_at(m_position, world_lookat, vec3_up_world);
-}
+        if (dot > 0.99f) {
+            log<LogLevel::Warn>(std::format(
+                "Camera forward is near parallel with world up! Dot: {:.4f}",
+                dot));
+        }
+    }
 
-void Camera::set_position(glm::vec3 world_pos) {
-    m_position = world_pos;
+    return lookAt(m_world_pos, m_world_target, vec3_up_world);
 }

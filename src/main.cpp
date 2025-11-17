@@ -1,7 +1,7 @@
+#include "_config_debug.hpp"
 #include "camera.hpp"
 #include "config.hpp"
 #include "gl_debug.hpp"
-#include "gl_debug_config.hpp"
 #include "logger.hpp"
 #include "shader.hpp"
 #include "triangle_mesh.hpp"
@@ -100,7 +100,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
-    if constexpr (gl_debug_enabled) {
+    if constexpr (debug_enabled) {
         log<LogLevel::Info>("DEBUG flag on");
         glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
     } else {
@@ -133,7 +133,7 @@ int main() {
     }
 
     // Enable OpenGL debug context if available (Requires 4.3+)
-    if constexpr (gl_debug_enabled) {
+    if constexpr (debug_enabled) {
         int flags;
         GL_CALL(glGetIntegerv(GL_CONTEXT_FLAGS, &flags));
         if ((flags & GL_CONTEXT_FLAG_DEBUG_BIT) == 0) {
@@ -219,11 +219,12 @@ int main() {
                                         glm::vec3(1.0f, 1.0f, 1.0f));
 
                 // Make the camera worble (ciruclar headbob)
-                camera.look_at(glm::vec3(std::cosf(t), std::sinf(t), 0.0f));
+                camera.set_world_target(
+                    glm::vec3(std::cosf(t), std::sinf(t), 0.0f));
 
                 // Rotate the camera around the origin* (well rotate around the
                 // lookat)
-                camera.set_position(
+                camera.set_world_pos(
                     glm::vec3(std::sinf(t) * radius, 0, std::cosf(t) * radius));
 
                 basic_shader.set_mat4f("uModel",

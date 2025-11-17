@@ -89,38 +89,29 @@ void APIENTRY gl_debug_output(GLenum source,
 }
 
 // From https://registry.khronos.org/OpenGL-Refpages/gl4/html/glGetError.xhtml
+// consult this for indepth info
 const char* translate_gl_get_error_enum_message(GLenum error_code) {
     switch (error_code) {
         case GL_NO_ERROR:
-            return "No error has been recorded. The value of this symbolic "
-                   "constant is guaranteed to be 0.";
+            return "GL_NO_ERROR : No error was recorded.";
         case GL_INVALID_ENUM:
-            return "An unacceptable value is specified for an enumerated "
-                   "argument. The offending command is ignored and has no "
-                   "other side effect than to set the error flag.";
+            return "GL_INVALID_ENUM : Invalid value for an enum argument.";
         case GL_INVALID_VALUE:
-            return "A numeric argument is out of range. The offending command "
-                   "is ignored and has no other side effect than to set the "
-                   "error flag.";
+            return "GL_INVALID_VALUE : Numeric argument out of range.";
         case GL_INVALID_OPERATION:
-            return "The specified operation is not allowed in the current "
-                   "state. The offending command is ignored and has no other "
-                   "side effect than to set the error flag.";
+            return "GL_INVALID_OPERATION : Operation cannot be performed in "
+                   "the current state.";
         case GL_INVALID_FRAMEBUFFER_OPERATION:
-            return "The framebuffer object is not complete. The offending "
-                   "command is ignored and has no other side effect than to "
-                   "set the error flag.";
+            return "GL_INVALID_FRAMEBUFFER_OPERATION : Framebuffer object "
+                   "is not complete.";
         case GL_OUT_OF_MEMORY:
-            return "There is not enough memory left to execute the command. "
-                   "The state of the GL is undefined, except for the state of "
-                   "the error flags, after this error is recorded.";
+            return "GL_OUT_OF_MEMORY : Not enough memory left to execute the "
+                   "command.";
         case GL_STACK_UNDERFLOW:
-            return "An attempt has been made to perform an operation that "
-                   "would cause an internal stack to underflow.";
+            return "GL_STACK_UNDERFLOW : Stack underflow.";
         case GL_STACK_OVERFLOW:
-            return "An attempt has been made to perform an operation that "
-                   "would cause an internal stack to overflow.";
+            return "GL_STACK_OVERFLOW : Stack overflow.";
         default:
-            return "Unknown error code";
+            return "None : Unknown error code";
     }
 }
