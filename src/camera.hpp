@@ -9,18 +9,19 @@ inline constexpr glm::vec3 vec3_forward_world{0.0f, 0.0f, -1.0f};
 
 class Camera {
    public:
-    Camera(glm::vec3 initial_world_pos, glm::vec3 initial_world_target);
+    Camera(glm::vec3 initial_cam_pos, glm::vec3 initial_cam_target);
     ~Camera();
 
     glm::mat4 get_view_matrix() const;
 
-    void set_world_pos(glm::vec3 world_pos);
-    void set_world_forward(glm::vec3 world_forward);
-    void set_world_target(glm::vec3 world_target);
+    void set_cam_pos(glm::vec3 cam_pos);
+    void set_cam_forward(glm::vec3 cam_forward);
+    void set_cam_target(glm::vec3 cam_target);
+
     void move_from_input(glm::vec2 input_move, glm::vec2 speed_move);
 
    private:
-    glm::vec3 m_world_pos;
-    glm::vec3 m_world_target;
-    glm::vec3 m_world_forward;
+    glm::vec3 m_cam_pos;
+    glm::vec3 m_cam_target;
+    glm::vec3 m_cam_forward;
 };

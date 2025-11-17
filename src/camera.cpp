@@ -9,44 +9,43 @@
 #include <glm/gtc/quaternion.hpp>
 
 #include "gl_debug.hpp"
-Camera::Camera(glm::vec3 initial_world_pos, glm::vec3 initial_world_target)
-    : m_world_pos(initial_world_pos),
-      m_world_target(initial_world_target),
-      m_world_forward(
-          glm::normalize(initial_world_target - initial_world_pos)) {}
+Camera::Camera(glm::vec3 initial_cam_pos, glm::vec3 initial_cam_target)
+    : m_cam_pos(initial_cam_pos),
+      m_cam_target(initial_cam_target),
+      m_cam_forward(glm::normalize(initial_cam_target - initial_cam_pos)) {}
 
 Camera::~Camera() {}
 
-void Camera::set_world_pos(glm::vec3 world_pos) {
-    m_world_pos = world_pos;
-    m_world_target = m_world_pos + m_world_forward;
+void Camera::set_cam_pos(glm::vec3 cam_pos) {
+    m_cam_pos = cam_pos;
+    m_cam_target = m_cam_pos + m_cam_forward;
 }
 
-void Camera::set_world_forward(glm::vec3 world_forward) {
-    m_world_forward = glm::normalize(world_forward);
-    m_world_target = m_world_pos + m_world_forward;
+void Camera::set_cam_forward(glm::vec3 cam_forward) {
+    m_cam_forward = glm::normalize(cam_forward);
+    m_cam_target = m_cam_pos + m_cam_forward;
 }
 
-void Camera::set_world_target(glm::vec3 world_target) {
-    m_world_target = world_target;
-    m_world_forward = glm::normalize(m_world_target - m_world_pos);
+void Camera::set_cam_target(glm::vec3 cam_target) {
+    m_cam_target = cam_target;
+    m_cam_forward = glm::normalize(m_cam_target - m_cam_pos);
 }
 
 void Camera::move_from_input(glm::vec2 input_move, glm::vec2 speed_move) {
-    glm::vec3 right =
-        glm::normalize(glm::cross(m_world_forward, vec3_up_world));
-    glm::vec3 up = glm::normalize(glm::cross(right, m_world_forward));
+    glm::vec3 cam_right =
+        glm::normalize(glm::cross(m_cam_forward, vec3_up_world));
 
-    m_world_pos += right * input_move.x * speed_move.x;
-    m_world_pos += up * input_move.y * speed_move.y;
+    glm::vec3 m_cam_pos_cpy = m_cam_pos;
+    m_cam_pos_cpy += cam_right * input_move.x * speed_move.x;
+    m_cam_pos_cpy += m_cam_forward * input_move.y * speed_move.y;
 
-    m_world_target = m_world_pos + m_world_forward;
+    set_cam_pos(m_cam_pos_cpy);
 }
 
 glm::mat4 Camera::get_view_matrix() const {
     // gives warnign if forward is nearly parallel with world up vector
     if constexpr (debug_enabled) {
-        glm::vec3 forward = glm::normalize(m_world_target - m_world_pos);
+        glm::vec3 forward = glm::normalize(m_cam_target - m_cam_pos);
         float dot = glm::abs(glm::dot(forward, vec3_up_world));
 
         if (dot > 0.99f) {
@@ -56,5 +55,5 @@ glm::mat4 Camera::get_view_matrix() const {
         }
     }
 
-    return lookAt(m_world_pos, m_world_target, vec3_up_world);
+    return lookAt(m_cam_pos, m_cam_target, vec3_up_world);
 }
