@@ -17,6 +17,7 @@ class Camera {
     void set_world_pos(glm::vec3 world_pos);
     void set_world_forward(glm::vec3 world_forward);
     void set_world_target(glm::vec3 world_target);
+    void move_from_input(glm::vec2 input_move, glm::vec2 speed_move);
 
    private:
     glm::vec3 m_world_pos;

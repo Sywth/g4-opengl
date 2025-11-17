@@ -1,6 +1,7 @@
 #include "_config_debug.hpp"
 #include "camera.hpp"
-#include "config.hpp"
+#include "constants.hpp"
+#include "game_state.hpp"
 #include "gl_debug.hpp"
 #include "logger.hpp"
 #include "shader.hpp"
@@ -29,6 +30,22 @@ void handle_window_events(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         log<LogLevel::Info>("Escape key pressed, closing window");
         glfwSetWindowShouldClose(window, true);
+    }
+
+    g4::game_state::input_move = glm::vec2(0.0f, 0.0f);
+    g4::game_state::input_look = glm::vec2(0.0f, 0.0f);
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        g4::game_state::input_move.y = 1.0f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        g4::game_state::input_move.y = -1.0f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        g4::game_state::input_move.x = -1.0f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        g4::game_state::input_move.x = 1.0f;
     }
 }
 
@@ -199,7 +216,9 @@ int main() {
         while (!glfwWindowShouldClose(window)) {
             handle_window_events(window);
 
-            GL_CALL(glClearColor(0.2f, 0.3f, 0.3f, 1.0f));
+            GL_CALL(glClearColor(g4::game_state::clear_color.x,
+                                 g4::game_state::clear_color.y,
+                                 g4::game_state::clear_color.z, 1.0f));
             GL_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
             basic_shader.use();
@@ -218,14 +237,20 @@ int main() {
                 mat_model = glm::rotate(mat_model, glm::radians(0.1f),
                                         glm::vec3(1.0f, 1.0f, 1.0f));
 
-                // Make the camera worble (ciruclar headbob)
-                camera.set_world_target(
-                    glm::vec3(std::cosf(t), std::sinf(t), 0.0f));
+                // // Make the camera worble (ciruclar headbob)
+                // camera.set_world_target(
+                //     glm::vec3(std::cosf(t), std::sinf(t), 0.0f));
 
-                // Rotate the camera around the origin* (well rotate around the
-                // lookat)
-                camera.set_world_pos(
-                    glm::vec3(std::sinf(t) * radius, 0, std::cosf(t) * radius));
+                // // Rotate the camera around the origin* (well rotate around
+                // the
+                // // lookat)
+                // camera.set_world_pos(
+                //     glm::vec3(std::sinf(t) * radius, 0, std::cosf(t) *
+                //     radius));
+
+                // Camera updates
+                camera.move_from_input(g4::game_state::input_move,
+                                       g4::game_state::speed_move);
 
                 basic_shader.set_mat4f("uModel",
                                        glm::translate(mat_model, offset));

@@ -32,6 +32,17 @@ void Camera::set_world_target(glm::vec3 world_target) {
     m_world_forward = glm::normalize(m_world_target - m_world_pos);
 }
 
+void Camera::move_from_input(glm::vec2 input_move, glm::vec2 speed_move) {
+    glm::vec3 right =
+        glm::normalize(glm::cross(m_world_forward, vec3_up_world));
+    glm::vec3 up = glm::normalize(glm::cross(right, m_world_forward));
+
+    m_world_pos += right * input_move.x * speed_move.x;
+    m_world_pos += up * input_move.y * speed_move.y;
+
+    m_world_target = m_world_pos + m_world_forward;
+}
+
 glm::mat4 Camera::get_view_matrix() const {
     // gives warnign if forward is nearly parallel with world up vector
     if constexpr (debug_enabled) {
