@@ -237,17 +237,6 @@ int main() {
                 mat_model = glm::rotate(mat_model, glm::radians(0.1f),
                                         glm::vec3(1.0f, 1.0f, 1.0f));
 
-                // // Make the camera worble (ciruclar headbob)
-                // camera.set_world_target(
-                //     glm::vec3(std::cosf(t), std::sinf(t), 0.0f));
-
-                // // Rotate the camera around the origin* (well rotate around
-                // the
-                // // lookat)
-                // camera.set_world_pos(
-                //     glm::vec3(std::sinf(t) * radius, 0, std::cosf(t) *
-                //     radius));
-
                 // Camera updates
                 camera.move_from_input(g4::game_state::input_move,
                                        g4::game_state::speed_move);

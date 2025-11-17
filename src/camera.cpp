@@ -31,12 +31,13 @@ void Camera::set_cam_target(glm::vec3 cam_target) {
     m_cam_forward = glm::normalize(m_cam_target - m_cam_pos);
 }
 
-void Camera::move_from_input(glm::vec2 input_move, glm::vec2 speed_move) {
-    glm::vec3 cam_right =
-        glm::normalize(glm::cross(m_cam_forward, vec3_up_world));
+glm::vec3 Camera::get_cam_right() const {
+    return glm::normalize(glm::cross(m_cam_forward, vec3_up_world));
+}
 
+void Camera::move_from_input(glm::vec2 input_move, glm::vec2 speed_move) {
     glm::vec3 m_cam_pos_cpy = m_cam_pos;
-    m_cam_pos_cpy += cam_right * input_move.x * speed_move.x;
+    m_cam_pos_cpy += get_cam_right() * input_move.x * speed_move.x;
     m_cam_pos_cpy += m_cam_forward * input_move.y * speed_move.y;
 
     set_cam_pos(m_cam_pos_cpy);

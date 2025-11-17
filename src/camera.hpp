@@ -18,6 +18,7 @@ class Camera {
     void set_cam_forward(glm::vec3 cam_forward);
     void set_cam_target(glm::vec3 cam_target);
 
+    glm::vec3 get_cam_right() const;
     void move_from_input(glm::vec2 input_move, glm::vec2 speed_move);
 
    private:
