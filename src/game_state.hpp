@@ -6,12 +6,13 @@
 
 namespace g4 {
 namespace game_state {
-glm::vec3 clear_color(0.2f, 0.3f, 0.3f);
+extern glm::vec3 clear_color;
+extern glm::vec2 input_move;
+extern glm::vec2 input_look;
+extern glm::vec2 speed_move;
+extern glm::vec2 speed_look;
 
-glm::vec2 input_move(0.0f, 0.0f);
-glm::vec2 input_look(0.0f, 0.0f);
-
-glm::vec2 speed_move(0.005f, 0.005f);
-glm::vec2 speed_look(0.005f, 0.005f);
+extern float delta_time;
+extern float time_last_frame;
 }  // namespace game_state
 }  // namespace g4

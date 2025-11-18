@@ -39,3 +39,8 @@ Misc :
 
 - CPP Standard : 23
 - Using the MSVC 2022 amd64 build kit
+
+## Conventions
+
+- `m_` prefix for member variables
+- `n_` prefix for member variables that are normalized

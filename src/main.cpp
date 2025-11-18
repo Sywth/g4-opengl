@@ -47,6 +47,38 @@ void handle_window_events(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
         g4::game_state::input_move.x = 1.0f;
     }
+
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+        g4::game_state::input_look.y = 1.0f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+        g4::game_state::input_look.y = -1.0f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+        g4::game_state::input_look.x = -1.0f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+        g4::game_state::input_look.x = 1.0f;
+    }
+}
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+    static bool first_mouse = true;
+    static glm::vec2 last_pos = glm::vec2(0.0f, 0.0f);
+    if (first_mouse) {
+        last_pos =
+            glm::vec2(static_cast<float>(xpos), static_cast<float>(ypos));
+        first_mouse = false;
+        return;
+    }
+
+    glm::vec2 current_pos =
+        glm::vec2(static_cast<float>(xpos), static_cast<float>(ypos));
+
+    glm::vec2 offset = current_pos - last_pos;
+    last_pos = current_pos;
+
+    g4::game_state::input_look = offset;
 }
 
 const aiScene* load_scene(const std::filesystem::path& path,
@@ -142,6 +174,8 @@ int main() {
 
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, resize_cb);
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         log<LogLevel::Error>("Failed to initialize GLAD");
@@ -216,38 +250,30 @@ int main() {
         while (!glfwWindowShouldClose(window)) {
             handle_window_events(window);
 
+            // Delta Time
+            float time_current_frame = static_cast<float>(glfwGetTime());
+            g4::game_state::delta_time =
+                time_current_frame - g4::game_state::time_last_frame;
+            g4::game_state::time_last_frame = time_current_frame;
+
+            // Rendering
             GL_CALL(glClearColor(g4::game_state::clear_color.x,
                                  g4::game_state::clear_color.y,
                                  g4::game_state::clear_color.z, 1.0f));
             GL_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-
             basic_shader.use();
 
-            // DEBUG : animate color
-            float t = glfwGetTime();
-            const float radius = 5.0f;
-            basic_shader.set_vecnf(
-                "uColor",
-                std::vector<float>{(std::sinf(t) + 1.0f) / 2.0f,
-                                   (std::cosf(t) + 1.0f) / 2.0f, 0.5f, 1.0f});
+            // Camera updates
+            camera.move_from_input(g4::game_state::input_move,
+                                   g4::game_state::speed_move);
+            camera.rotate_from_input(g4::game_state::input_look,
+                                     g4::game_state::speed_look);
 
-            // DEBUG : animate model matrix
-            for (const auto& offset : offsets) {
-                // Rotate the model
-                mat_model = glm::rotate(mat_model, glm::radians(0.1f),
-                                        glm::vec3(1.0f, 1.0f, 1.0f));
+            basic_shader.set_mat4f("uModel", mat_model);
+            basic_shader.set_mat4f("uView", camera.get_view_matrix());
+            basic_shader.set_mat4f("uProj", mat_proj);
 
-                // Camera updates
-                camera.move_from_input(g4::game_state::input_move,
-                                       g4::game_state::speed_move);
-
-                basic_shader.set_mat4f("uModel",
-                                       glm::translate(mat_model, offset));
-                basic_shader.set_mat4f("uView", camera.get_view_matrix());
-                basic_shader.set_mat4f("uProj", mat_proj);
-
-                triangle_mesh.draw();
-            }
+            triangle_mesh.draw();
 
             glfwSwapBuffers(window);
             glfwPollEvents();

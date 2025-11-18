@@ -13,16 +13,17 @@ class Camera {
     ~Camera();
 
     glm::mat4 get_view_matrix() const;
+    glm::vec3 get_cam_right() const;
 
     void set_cam_pos(glm::vec3 cam_pos);
     void set_cam_forward(glm::vec3 cam_forward);
     void set_cam_target(glm::vec3 cam_target);
 
-    glm::vec3 get_cam_right() const;
     void move_from_input(glm::vec2 input_move, glm::vec2 speed_move);
+    void rotate_from_input(glm::vec2 input_look, glm::vec2 speed_look);
 
    private:
     glm::vec3 m_cam_pos;
     glm::vec3 m_cam_target;
-    glm::vec3 m_cam_forward;
+    glm::vec3 mn_cam_forward;
 };
