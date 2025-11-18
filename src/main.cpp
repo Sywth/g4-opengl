@@ -23,6 +23,7 @@
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
 
+#include <entt/entt.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 

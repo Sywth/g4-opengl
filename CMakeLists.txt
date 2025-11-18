@@ -21,6 +21,7 @@ file(GLOB_RECURSE SRC_FILES
 # You must manually add vendor files here
 set(VENDOR_FILES
     vendor/glad.c
+    # vendor/entt.hpp # Like this?
 )
 
 add_executable(g4

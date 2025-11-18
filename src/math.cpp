@@ -2,6 +2,7 @@
 
 namespace g4::math {
 
+// TODO : Check correctness
 // Projects vec onto base
 inline glm::vec3 proj(glm::vec3 vec, glm::vec3 base) {
     auto vb = glm::dot(vec, base);
@@ -9,6 +10,7 @@ inline glm::vec3 proj(glm::vec3 vec, glm::vec3 base) {
     return (vb / bb) * base;
 }
 
+// TODO : Check correctness
 // Runs gram-schmidt to get orthogonal basis
 // `normalized_us` : set of normalized vectors (must be linearly independent)
 template <size_t M>
@@ -30,6 +32,7 @@ std::array<glm::vec3, M> orthonormalize_normalized_vec3s(
     return normalized_vs;
 }
 
+// TODO : Check correctness
 glm::mat4 look_at(glm::vec3 loc, glm::vec3 target, glm::vec3 world_up) {
     glm::vec3 cam_forward = glm::normalize(target - loc);
     glm::vec3 cam_right = glm::normalize(glm::cross(cam_forward, world_up));
