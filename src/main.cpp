@@ -48,7 +48,7 @@ void handle_window_events(GLFWwindow* window) {
     }
 }
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+void cursor_move_callback(GLFWwindow* window, double xpos, double ypos) {
     static bool first_mouse = true;
     static glm::vec2 last_pos = glm::vec2(0.0f, 0.0f);
     if (first_mouse) {
@@ -65,6 +65,15 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     last_pos = current_pos;
 
     g4::game_state::input_look = offset * g4::game_state::mouse_sensitivity;
+}
+
+void cursor_scroll_callback(GLFWwindow* window,
+                            double xoffset,
+                            double yoffset) {
+    g4::game_state::fov -= static_cast<float>(yoffset);
+    g4::game_state::fov = glm::clamp(g4::game_state::fov, 1.0f, 90.0f);
+    log<LogLevel::Info>(
+        std::format("FOV adjusted to {:.2f}", g4::game_state::fov));
 }
 
 const aiScene* load_scene(const std::filesystem::path& path,
@@ -98,7 +107,7 @@ void load_trianuglated_mesh_data(const aiMesh* mesh,
     }
 
     vertices.reserve(mesh->mNumVertices * 3);
-    const float scale = 0.5f;  // DEBUG
+    const float scale = 1.0f;  // DEBUG
     for (unsigned int i = 0; i < mesh->mNumVertices; ++i) {
         const aiVector3D& pos = mesh->mVertices[i];
 
@@ -160,7 +169,8 @@ int main() {
 
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, resize_cb);
-    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetCursorPosCallback(window, cursor_move_callback);
+    glfwSetScrollCallback(window, cursor_scroll_callback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -218,8 +228,8 @@ int main() {
         glm::mat4 mat_model = glm::mat4(1.0f);  // local -> world
         glm::mat4 mat_view = glm::mat4(1.0f);   // world -> camera
         glm::mat4 mat_proj = glm::perspective(
-            glm::radians(45.0f), g4::config::display::aspect_ratio,
-            g4::config::display::z_near,
+            glm::radians(g4::game_state::fov),
+            g4::config::display::aspect_ratio, g4::config::display::z_near,
             g4::config::display::z_far);  // camera -> clip (screen)
 
         float initial_z = -8.0f;
@@ -255,6 +265,12 @@ int main() {
             camera.rotate_from_input(g4::game_state::input_look,
                                      g4::game_state::speed_look);
             g4::game_state::input_look = glm::vec2(0.0f, 0.0f);
+
+            // Update zoom
+            mat_proj = glm::perspective(glm::radians(g4::game_state::fov),
+                                        g4::config::display::aspect_ratio,
+                                        g4::config::display::z_near,
+                                        g4::config::display::z_far);
 
             basic_shader.set_mat4f("uModel", mat_model);
             basic_shader.set_mat4f("uView", camera.get_view_matrix());

@@ -7,5 +7,6 @@ glm::vec2 g4::game_state::speed_move{10.f, 10.f};
 glm::vec2 g4::game_state::speed_look{100.f, 100.f};
 glm::vec2 g4::game_state::mouse_sensitivity{0.1f, 0.1f};
 
+float g4::game_state::fov = 70.0f;
 float g4::game_state::delta_time = 0.0f;
 float g4::game_state::time_last_frame = 0.0f;

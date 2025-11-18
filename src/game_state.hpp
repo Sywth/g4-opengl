@@ -13,6 +13,7 @@ extern glm::vec2 speed_move;
 extern glm::vec2 speed_look;
 extern glm::vec2 mouse_sensitivity;
 
+extern float fov;
 extern float delta_time;
 extern float time_last_frame;
 }  // namespace game_state

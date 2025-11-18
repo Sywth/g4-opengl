@@ -1,5 +1,6 @@
 - [ ] Fix the current camera movement
 
+  - [ ] Instead of storing forward, target, position just store a transform object which as a vec3 positio and quat orientation
   - [ ] The current use of globals in g4::game_state is clunky and already has lead to multiple issues to do with figuring out where state is being mutated
   - [ ] It might be smoother to ditch updating camera look update from callback and instead do it in the main game loop like movement
 
