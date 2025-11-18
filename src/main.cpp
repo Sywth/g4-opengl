@@ -33,7 +33,6 @@ void handle_window_events(GLFWwindow* window) {
     }
 
     g4::game_state::input_move = glm::vec2(0.0f, 0.0f);
-    g4::game_state::input_look = glm::vec2(0.0f, 0.0f);
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
         g4::game_state::input_move.y = 1.0f;
@@ -47,19 +46,6 @@ void handle_window_events(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
         g4::game_state::input_move.x = 1.0f;
     }
-
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-        g4::game_state::input_look.y = 1.0f;
-    }
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-        g4::game_state::input_look.y = -1.0f;
-    }
-    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
-        g4::game_state::input_look.x = -1.0f;
-    }
-    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
-        g4::game_state::input_look.x = 1.0f;
-    }
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
@@ -67,18 +53,18 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     static glm::vec2 last_pos = glm::vec2(0.0f, 0.0f);
     if (first_mouse) {
         last_pos =
-            glm::vec2(static_cast<float>(xpos), static_cast<float>(ypos));
+            glm::vec2(static_cast<float>(xpos), static_cast<float>(-ypos));
         first_mouse = false;
         return;
     }
 
     glm::vec2 current_pos =
-        glm::vec2(static_cast<float>(xpos), static_cast<float>(ypos));
+        glm::vec2(static_cast<float>(xpos), static_cast<float>(-ypos));
 
     glm::vec2 offset = current_pos - last_pos;
     last_pos = current_pos;
 
-    g4::game_state::input_look = offset;
+    g4::game_state::input_look = offset * g4::game_state::mouse_sensitivity;
 }
 
 const aiScene* load_scene(const std::filesystem::path& path,
@@ -268,6 +254,7 @@ int main() {
                                    g4::game_state::speed_move);
             camera.rotate_from_input(g4::game_state::input_look,
                                      g4::game_state::speed_look);
+            g4::game_state::input_look = glm::vec2(0.0f, 0.0f);
 
             basic_shader.set_mat4f("uModel", mat_model);
             basic_shader.set_mat4f("uView", camera.get_view_matrix());

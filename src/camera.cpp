@@ -48,6 +48,9 @@ void Camera::move_from_input(glm::vec2 input_move, glm::vec2 speed_move) {
 void Camera::rotate_from_input(glm::vec2 input_look, glm::vec2 speed_look) {
     float dt = g4::game_state::delta_time;
 
+    log<LogLevel::Debug>(
+        std::format("Input Look: {:.4f}, {:.4f}", input_look.x, input_look.y));
+
     // 1. Compute yaw (around world-up) and pitch (around camera-right)
     float yaw = input_look.x * speed_look.x * dt * -1.0f;
     float pitch = input_look.y * speed_look.y * dt;
