@@ -4,3 +4,16 @@ IndentWidth: 4
 ContinuationIndentWidth: 4
 TabWidth: 4
 UseTab: Never
+# Future replacement :
+# BasedOnStyle: LLVM
+# IndentWidth: 4
+# ContinuationIndentWidth: 4
+# ColumnLimit: 100   # or disable using 0
+# BinPackArguments: false
+# BinPackParameters: false
+# AllowAllArgumentsOnNextLine: false
+# PenaltyBreakFirstLess: 0
+# AlwaysBreakAfterDefinitionReturnType: None
+# AlwaysBreakAfterReturnType: None
+# AlwaysBreakBeforeMultilineStrings: true
+# BreakBeforeBraces: Attach

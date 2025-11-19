@@ -4,6 +4,7 @@
 #include "game_state.hpp"
 #include "gl_debug.hpp"
 #include "logger.hpp"
+#include "math.hpp"
 #include "shader.hpp"
 #include "triangle_mesh.hpp"
 
@@ -129,6 +130,12 @@ void load_trianuglated_mesh_data(const aiMesh* mesh,
     }
 }
 
+struct c_Transform {
+    glm::vec3 position = glm::vec3(0.0f);
+    glm::vec3 scale = glm::vec3(1.0f);
+    glm::quat rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+};
+
 // TODO : Get this mesh loading into my custom triangle mesh class working
 //  - I think it is working its just
 //      - 1) It wrong ordering (must be ccw)
@@ -139,6 +146,22 @@ int main() {
         log<LogLevel::Error>("Failed to initialize GLFW");
         return -1;
     }
+
+    // TODO : Finish using this
+    entt::registry registry;
+    entt::entity player = registry.create();
+    registry.emplace<c_Transform>(player, glm::vec3(1.0f), glm::vec3(2.0f),
+                                  glm::vec3(3.0f));
+
+    auto player_transform = registry.get<c_Transform>(player);
+    auto position = player_transform.position;
+    auto scale = player_transform.scale;
+    auto rotation = glm::eulerAngles(player_transform.rotation);
+    log<LogLevel::Info>(std::format(
+        "Player Transform : \nPos : ({:.2f}, {:.2f}, {:.2f})\nScale : ({:.2f}, "
+        "{:.2f}, {:.2f})\nRotation : ({:.2f}, {:.2f}, {:.2f})",
+        position.x, position.y, position.z, scale.x, scale.y, scale.z,
+        rotation.x, rotation.y, rotation.z));
 
     // Give windowing library hints for debugging and opengl stuff (Before
     // creating window)
