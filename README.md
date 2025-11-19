@@ -47,3 +47,4 @@ Misc :
 
 - `m_` prefix for member variables
 - `n_` prefix for member variables that are normalized
+- `c_` prefix for component structs in ECS
