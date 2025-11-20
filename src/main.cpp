@@ -131,9 +131,16 @@ void load_trianuglated_mesh_data(const aiMesh* mesh,
 }
 
 struct c_Transform {
-    glm::vec3 position = glm::vec3(0.0f);
-    glm::vec3 scale = glm::vec3(1.0f);
-    glm::quat rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+    glm::vec3 position{0.0f};
+    glm::vec3 scale{1.0f};
+    glm::quat rotation{1.0f, 0.0f, 0.0f, 0.0f};
+};
+
+struct c_Camera {
+    float fov_deg{64.0f};
+    float z_near{0.0625f};
+    float z_far{256.0f};
+    float aspect_ratio{1.0f};
 };
 
 // TODO : Get this mesh loading into my custom triangle mesh class working
@@ -148,12 +155,12 @@ int main() {
     }
 
     // TODO : Finish using this
-    entt::registry registry;
-    entt::entity player = registry.create();
-    registry.emplace<c_Transform>(player, glm::vec3(1.0f), glm::vec3(2.0f),
-                                  glm::vec3(3.0f));
+    entt::registry entt_registry{};
+    entt::entity player = entt_registry.create();
+    entt_registry.emplace<c_Transform>(player, glm::vec3(1.0f), glm::vec3(2.0f),
+                                       glm::vec3(3.0f));
 
-    auto player_transform = registry.get<c_Transform>(player);
+    auto player_transform = entt_registry.get<c_Transform>(player);
     auto position = player_transform.position;
     auto scale = player_transform.scale;
     auto rotation = glm::eulerAngles(player_transform.rotation);
