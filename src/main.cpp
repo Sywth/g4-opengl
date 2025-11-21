@@ -23,10 +23,12 @@
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
-
 #include <entt/entt.hpp>
+
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 void handle_window_events(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -134,6 +136,27 @@ struct c_Transform {
     glm::vec3 position{0.0f};
     glm::vec3 scale{1.0f};
     glm::quat rotation{1.0f, 0.0f, 0.0f, 0.0f};
+
+    glm::vec3 forward() const {
+        return glm::rotate(rotation, glm::vec3(0.0f, 0.0f, -1.0f));
+    }
+
+    glm::vec3 right() const {
+        return glm::rotate(rotation, glm::vec3(1.0f, 0.0f, 0.0f));
+    }
+
+    glm::vec3 up() const {
+        return glm::rotate(rotation, glm::vec3(0.0f, 1.0f, 0.0f));
+    }
+
+    glm::mat4 view_matrix() const {
+        // glm::mat4 mat_tran = glm::translate(glm::mat4(1.0f), position);
+        // glm::mat4 mat_rot = glm::toMat4(rotation);
+        // glm::mat4 mat_scale = glm::scale(glm::mat4(1.0f), scale);
+
+        // return mat_tran * mat_rot * mat_scale;
+        return glm::lookAt(position, position + forward(), vec3_up_world);
+    }
 };
 
 struct c_Camera {
@@ -142,6 +165,48 @@ struct c_Camera {
     float z_far{256.0f};
     float aspect_ratio{1.0f};
 };
+
+void camera_move_system(entt::registry& registry,
+                        const glm::vec2 input_move,
+                        const glm::vec2 speed_move) {
+    auto view = registry.view<c_Transform, c_Camera>();
+    for (auto entity : view) {
+        c_Transform& transform = view.get<c_Transform>(entity);
+
+        glm::vec3 forward = transform.forward();
+        glm::vec3 right = transform.right();
+
+        transform.position += forward * input_move.y * speed_move.y;
+        transform.position += right * input_move.x * speed_move.x;
+    }
+}
+
+void camera_look_system(entt::registry& registry,
+                        const glm::vec2 input_look,
+                        const glm::vec2 speed_look) {
+    auto view = registry.view<c_Transform, c_Camera>();
+    for (auto entity : view) {
+        c_Transform& transform = view.get<c_Transform>(entity);
+
+        glm::quat quat_pitch = glm::angleAxis(
+            glm::radians(-input_look.y * speed_look.y), transform.right());
+        glm::quat quat_yaw =
+            glm::angleAxis(glm::radians(-input_look.x * speed_look.x),
+                           glm::vec3(0.0f, 1.0f, 0.0f));
+
+        transform.rotation =
+            glm::normalize(quat_yaw * quat_pitch * transform.rotation);
+    }
+}
+
+entt::entity get_global_camera(const entt::registry& registry) {
+    // TODO : For now just return the first
+    auto view = registry.view<c_Transform, c_Camera>();
+    for (auto entity : view) {
+        return entity;
+    }
+    return entt::null;
+}
 
 // TODO : Get this mesh loading into my custom triangle mesh class working
 //  - I think it is working its just
@@ -156,19 +221,9 @@ int main() {
 
     // TODO : Finish using this
     entt::registry entt_registry{};
-    entt::entity player = entt_registry.create();
-    entt_registry.emplace<c_Transform>(player, glm::vec3(1.0f), glm::vec3(2.0f),
-                                       glm::vec3(3.0f));
-
-    auto player_transform = entt_registry.get<c_Transform>(player);
-    auto position = player_transform.position;
-    auto scale = player_transform.scale;
-    auto rotation = glm::eulerAngles(player_transform.rotation);
-    log<LogLevel::Info>(std::format(
-        "Player Transform : \nPos : ({:.2f}, {:.2f}, {:.2f})\nScale : ({:.2f}, "
-        "{:.2f}, {:.2f})\nRotation : ({:.2f}, {:.2f}, {:.2f})",
-        position.x, position.y, position.z, scale.x, scale.y, scale.z,
-        rotation.x, rotation.y, rotation.z));
+    entt::entity e_camera = entt_registry.create();
+    entt_registry.emplace<c_Transform>(e_camera, c_Transform{});
+    entt_registry.emplace<c_Camera>(e_camera, c_Camera{});
 
     // Give windowing library hints for debugging and opengl stuff (Before
     // creating window)
@@ -216,7 +271,8 @@ int main() {
         GL_CALL(glGetIntegerv(GL_CONTEXT_FLAGS, &flags));
         if ((flags & GL_CONTEXT_FLAG_DEBUG_BIT) == 0) {
             log<LogLevel::Fatal>(
-                "Debug context was not available even when DEBUG flag was set");
+                "Debug context was not available even when DEBUG flag was "
+                "set");
             return -1;
         }
 
@@ -258,20 +314,10 @@ int main() {
         // --- Camera ---
         glm::mat4 mat_model = glm::mat4(1.0f);  // local -> world
         glm::mat4 mat_view = glm::mat4(1.0f);   // world -> camera
-        glm::mat4 mat_proj = glm::perspective(
-            glm::radians(g4::game_state::fov),
-            g4::config::display::aspect_ratio, g4::config::display::z_near,
-            g4::config::display::z_far);  // camera -> clip (screen)
+        glm::mat4 mat_proj = glm::mat4(1.0f);   // camera -> clip
 
-        float initial_z = -8.0f;
+        const float initial_z = -1.0f;
         mat_view = glm::translate(mat_view, glm::vec3(0.0f, 0.0f, initial_z));
-
-        glm::vec3 offsets[] = {
-            glm::vec3(-0.82, 0.34, 0.12f), glm::vec3(0.45f, -0.12f, -0.34f),
-            glm::vec3(0.12f, 0.56f, 0.78f), glm::vec3(-0.34f, -0.78f, 0.45f)};
-
-        Camera camera(glm::vec3(0.0f, 0.0f, initial_z),
-                      glm::vec3(0.0f, 0.0f, 0.0f));
 
         //   --- Render Loop ---
         while (!glfwWindowShouldClose(window)) {
@@ -291,20 +337,22 @@ int main() {
             basic_shader.use();
 
             // Camera updates
-            camera.move_from_input(g4::game_state::input_move,
-                                   g4::game_state::speed_move);
-            camera.rotate_from_input(g4::game_state::input_look,
-                                     g4::game_state::speed_look);
+            camera_move_system(entt_registry, g4::game_state::input_move,
+                               g4::game_state::speed_move);
+
+            camera_look_system(entt_registry, g4::game_state::input_look,
+                               g4::game_state::speed_look);
             g4::game_state::input_look = glm::vec2(0.0f, 0.0f);
 
             // Update zoom
-            mat_proj = glm::perspective(glm::radians(g4::game_state::fov),
-                                        g4::config::display::aspect_ratio,
-                                        g4::config::display::z_near,
-                                        g4::config::display::z_far);
+            auto cam_transform = entt_registry.get<c_Transform>(e_camera);
+            auto cam_camera = entt_registry.get<c_Camera>(e_camera);
 
+            mat_proj = glm::perspective(glm::radians(cam_camera.fov_deg),
+                                        cam_camera.aspect_ratio,
+                                        cam_camera.z_near, cam_camera.z_far);
             basic_shader.set_mat4f("uModel", mat_model);
-            basic_shader.set_mat4f("uView", camera.get_view_matrix());
+            basic_shader.set_mat4f("uView", cam_transform.view_matrix());
             basic_shader.set_mat4f("uProj", mat_proj);
 
             triangle_mesh.draw();
