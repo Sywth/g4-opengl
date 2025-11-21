@@ -336,7 +336,8 @@ int main() {
             GL_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
             basic_shader.use();
 
-            // Camera updates
+            // TODO : This new quatternion shit broke everything (check last
+            // commit) Camera updates
             camera_move_system(entt_registry, g4::game_state::input_move,
                                g4::game_state::speed_move);
 

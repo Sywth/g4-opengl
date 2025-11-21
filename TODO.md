@@ -1,3 +1,8 @@
+- [ ] Fix this new ecs system for camera
+  - [ ] Wtf happened to the movment and looking system
+  - [ ] I doubt its speed i think its fucky with the quaternions or matrix math
+- [ ] Make everything ecs
+
 - [ ] Fix the current camera movement
 
   - [ ] Instead of storing forward, target, position just store a transform object which as a vec3 positio and quat orientation
