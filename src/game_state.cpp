@@ -3,6 +3,9 @@
 constexpr double input_look_speed = 1e-8;
 constexpr double input_move_speed = 1e-6;
 
+int g4::game_state::width = 800;
+int g4::game_state::height = 600;
+
 glm::vec3 g4::game_state::clear_color{0.2f, 0.3f, 0.3f};
 glm::vec2 g4::game_state::input_move{input_move_speed};
 glm::vec2 g4::game_state::input_look{input_look_speed};

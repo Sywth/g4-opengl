@@ -47,4 +47,12 @@ Misc :
 
 - `m_` prefix for member variables
 - `n_` prefix for member variables that are normalized
-- `c_` prefix for component structs in ECS
+
+- `c_` prefix for ECS component (struct and var)
+- `e_` prefix for ECS entity id (var)
+
+- `FIXME: ` - When code causes critical issues (i.e. causes compile errors or crashes)
+- `TODO: ` - Modifications / addition that need to be
+- `NOTE: ` - Notes explaining unintuitive parts of the code
+- `NS: ` - Note sure (this to avoid cargo culting while also making fast progress)
+- `OPT: ` - Possible optimizations

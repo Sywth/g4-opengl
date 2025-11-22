@@ -6,6 +6,8 @@
 
 namespace g4 {
 namespace game_state {
+extern int width;
+extern int height;
 extern glm::vec3 clear_color;
 extern glm::vec2 input_move;
 extern glm::vec2 input_look;

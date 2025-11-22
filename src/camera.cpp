@@ -48,8 +48,7 @@ void Camera::move_from_input(glm::vec2 input_move, glm::vec2 speed_move) {
 void Camera::rotate_from_input(glm::vec2 input_look, glm::vec2 speed_look) {
     float dt = g4::game_state::delta_time;
 
-    log<LogLevel::Debug>(
-        std::format("Input Look: {:.4f}, {:.4f}", input_look.x, input_look.y));
+    log<LogLevel::Debug>(std::format("Input Look: {:.4f}, {:.4f}", input_look.x, input_look.y));
 
     // 1. Compute yaw (around world-up) and pitch (around camera-right)
     float yaw = input_look.x * speed_look.x * dt * -1.0f;
@@ -64,8 +63,7 @@ void Camera::rotate_from_input(glm::vec2 input_look, glm::vec2 speed_look) {
     // If its too close to world up vector, reject the pitch
     float dot_up = glm::dot(glm::normalize(new_forward), vec3_up_world);
     if (glm::abs(dot_up) > 0.98f) {
-        log<LogLevel::Warn>(
-            std::format("Camera pitch too high {:.4f}", dot_up));
+        log<LogLevel::Warn>(std::format("Camera pitch too high {:.4f}", dot_up));
         return;
     }
 
@@ -83,9 +81,7 @@ glm::mat4 Camera::get_view_matrix() const {
         float dot = glm::abs(glm::dot(forward, vec3_up_world));
 
         if (dot > 0.99f) {
-            log<LogLevel::Warn>(std::format(
-                "Camera forward is near parallel with world up! Dot: {:.4f}",
-                dot));
+            log<LogLevel::Warn>(std::format("Camera forward is near parallel with world up! Dot: {:.4f}", dot));
         }
     }
 
