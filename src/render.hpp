@@ -23,6 +23,7 @@ class GraphicsApi {
     // TODO: Consider using to called cleanup_all automatically at destruction
     virtual ~GraphicsApi() = default;
 
+    // OPT: Should this cleanup-all just be done in a destructor?
     virtual void cleanup_mesh(entt::entity entity) = 0;
     virtual void cleanup_all() = 0;
 };

@@ -240,14 +240,14 @@ int main() {
             // TODO : This new quatternion shit broke everything (check last
             // commit) Camera updates
             s_camera(entt_registry);
-            // RF: There shoould be a bettter location to reset inputs
+            // REFACTOR: There shoould be a bettter location to reset inputs
             g4::game_state::input_look = glm::vec2(0.0f, 0.0f);
 
             // Update zoom
             auto c_camera_transform = entt_registry.get<c_Transform>(e_camera);
             auto c_camera_camera = entt_registry.get<c_Camera>(e_camera);
 
-            // RF: This is ugly
+            // REFACTOR: This is ugly
             // Updates aspect ratio
             c_camera_camera.aspect_ratio =
                 static_cast<float>(g4::game_state::width) / static_cast<float>(g4::game_state::height);
