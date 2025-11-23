@@ -26,7 +26,7 @@ void camera_look(c_Transform& transform, float dt, const glm::vec2& input_look, 
         new_rot = q_yaw * transform.rotation;
     }
 
-    // NS: Normalize again to avoid drift
+    // NOTSURE: Normalize again to avoid drift
     transform.rotation = glm::normalize(new_rot);
 }
 

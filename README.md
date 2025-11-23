@@ -55,7 +55,7 @@ Misc :
 - `FIXME: ` - When code causes critical issues (i.e. causes compile errors or crashes)
 - `TODO: ` - Modifications / addition that need to be
 - `NOTE: ` - Notes explaining unintuitive parts of the code
-- `NS: ` - Note sure (this to avoid cargo culting while also making fast progress)
+- `NOTSURE: ` - Note sure (this to avoid cargo culting while also making fast progress)
 - `OPT: ` - Possible optimizations
-- `RF: ` - Refactor this, its ugly
+- `REFACTOR: ` - Refactor this, its ugly
 - `FUTURE: ` - Unimplemented place holder to be done in future (if ever)
