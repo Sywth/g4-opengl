@@ -3,8 +3,7 @@
 
 class TriangleMesh {
    public:
-    TriangleMesh(const std::vector<float>& vertices,
-                 const std::vector<unsigned int>& indices);
+    TriangleMesh(const std::vector<float>& vertices, const std::vector<unsigned int>& indices);
     ~TriangleMesh();
 
     void draw() const;

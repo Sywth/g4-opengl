@@ -1,3 +1,8 @@
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/quaternion.hpp>
+
 #include "_config_debug.hpp"
 #include "camera.hpp"
 #include "constants.hpp"
@@ -5,8 +10,10 @@
 #include "gl_debug.hpp"
 #include "logger.hpp"
 #include "math.hpp"
+#include "mesh.hpp"
+#include "render.hpp"
 #include "shader.hpp"
-#include "triangle_mesh.hpp"
+#include "transform.hpp"
 
 #include <cassert>
 #include <filesystem>
@@ -24,11 +31,6 @@
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
 #include <entt/entt.hpp>
-
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/quaternion.hpp>
 
 void handle_window_events(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -120,70 +122,12 @@ void load_trianuglated_mesh_data(const aiMesh* mesh, std::vector<float>& vertice
     }
 }
 
-struct c_Transform {
-    glm::vec3 position{0.0f};
-    glm::vec3 scale{1.0f};
-    glm::quat rotation{1.0f, 0.0f, 0.0f, 0.0f};
-
-    glm::vec3 forward() const { return glm::rotate(rotation, vec3_forward_world); }
-
-    glm::vec3 right() const { return glm::rotate(rotation, vec3_right_world); }
-
-    glm::vec3 up() const { return glm::rotate(rotation, vec3_up_world); }
-
-    glm::mat4 view_matrix() const { return glm::lookAt(position, position + forward(), vec3_up_world); }
+void resize_cb(GLFWwindow* window, int width, int height) {
+    log<LogLevel::Info>(std::format("Window resized to {}x{}", width, height));
+    g4::game_state::width = width;
+    g4::game_state::height = height;
+    GL_CALL(glViewport(0, 0, width, height));
 };
-
-struct c_Camera {
-    float fov_deg{64.0f};
-    float z_near{0.0625f};
-    float z_far{256.0f};
-    float aspect_ratio{static_cast<float>(g4::game_state::width) / static_cast<float>(g4::game_state::height)};
-};
-
-void camera_move_system(entt::registry& registry, const glm::vec2 input_move, const glm::vec2 speed_move) {
-    auto view = registry.view<c_Transform, c_Camera>();
-    auto dt = g4::game_state::delta_time;
-
-    for (auto entity : view) {
-        c_Transform& transform = view.get<c_Transform>(entity);
-
-        glm::vec3 forward = transform.forward();
-        glm::vec3 right = transform.right();
-
-        transform.position += forward * input_move.y * speed_move.y * dt;
-        transform.position += right * input_move.x * speed_move.x * dt;
-    }
-}
-
-void camera_look_system(entt::registry& registry, const glm::vec2 input_look, const glm::vec2 speed_look) {
-    auto view = registry.view<c_Transform, c_Camera>();
-    float dt = g4::game_state::delta_time;
-
-    // DEBUG : log input look
-    log<LogLevel::Debug>(std::format("Input look: ({:.4f}, {:.4f})", input_look.x, input_look.y));
-
-    for (auto entity : view) {
-        c_Transform& transform = view.get<c_Transform>(entity);
-
-        float yaw = input_look.x * speed_look.x * dt * -1.0f;
-        float pitch = input_look.y * speed_look.y * dt;
-
-        // TODO : Remove the radian conversion
-        glm::quat q_yaw = glm::angleAxis(glm::radians(yaw), vec3_up_world);
-        glm::quat q_pitch = glm::angleAxis(glm::radians(pitch), transform.right());
-
-        // NS : Normalize to avoid drift
-        glm::quat new_rot = glm::normalize(q_pitch * q_yaw * transform.rotation);
-        float dot_up = glm::dot(glm::rotate(new_rot, vec3_forward_world), vec3_up_world);
-        if (glm::abs(dot_up) > 0.9f) {
-            log<LogLevel::Debug>("Pitch limit reached");
-            new_rot = glm::normalize(q_yaw * transform.rotation);
-        }
-
-        transform.rotation = new_rot;
-    }
-}
 
 int main() {
     GLFWwindow* window;
@@ -191,12 +135,6 @@ int main() {
         log<LogLevel::Error>("Failed to initialize GLFW");
         return -1;
     }
-
-    // TODO : Finish using this
-    entt::registry entt_registry{};
-    entt::entity e_camera = entt_registry.create();
-    entt_registry.emplace<c_Transform>(e_camera, c_Transform{});
-    entt_registry.emplace<c_Camera>(e_camera, c_Camera{});
 
     // Give windowing library hints for debugging and opengl stuff (Before
     // creating window)
@@ -217,13 +155,6 @@ int main() {
         glfwTerminate();
         return -1;
     }
-
-    auto resize_cb = [](GLFWwindow* window, int width, int height) {
-        log<LogLevel::Info>(std::format("Window resized to {}x{}", width, height));
-        g4::game_state::width = width;
-        g4::game_state::height = height;
-        GL_CALL(glViewport(0, 0, width, height));
-    };
 
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, resize_cb);
@@ -275,18 +206,21 @@ int main() {
         std::vector<unsigned int> indices;
         load_trianuglated_mesh_data(mesh, vertices, indices);
 
-        TriangleMesh triangle_mesh(vertices, indices);
-
         // --- Shaders ---
         auto basic_shader = Shader("../../assets/shaders/basic.vert", "../../assets/shaders/basic.frag");
 
-        // --- Camera ---
-        glm::mat4 mat_model = glm::mat4(1.0f);  // local -> world
-        glm::mat4 mat_view = glm::mat4(1.0f);   // world -> camera
-        glm::mat4 mat_proj = glm::mat4(1.0f);   // camera -> clip
+        // --- ECS Setup ---
+        entt::registry entt_registry{};
 
-        const float initial_z = -1.0f;
-        mat_view = glm::translate(mat_view, glm::vec3(0.0f, 0.0f, initial_z));
+        // Create mesh entity
+        entt::entity e_mesh = entt_registry.create();
+        entt_registry.emplace<c_Mesh>(e_mesh, c_Mesh{vertices, indices});
+        entt_registry.emplace<c_Transform>(e_mesh, c_Transform{});
+
+        // Create camera entity
+        entt::entity e_camera = entt_registry.create();
+        entt_registry.emplace<c_Transform>(e_camera, c_Transform{});
+        entt_registry.emplace<c_Camera>(e_camera, c_Camera{});
 
         //   --- Render Loop ---
         while (!glfwWindowShouldClose(window)) {
@@ -305,29 +239,34 @@ int main() {
 
             // TODO : This new quatternion shit broke everything (check last
             // commit) Camera updates
-            camera_move_system(entt_registry, g4::game_state::input_move, g4::game_state::speed_move);
-
-            camera_look_system(entt_registry, g4::game_state::input_look, g4::game_state::speed_look);
+            s_camera(entt_registry);
+            // RF: There shoould be a bettter location to reset inputs
             g4::game_state::input_look = glm::vec2(0.0f, 0.0f);
 
             // Update zoom
             auto c_camera_transform = entt_registry.get<c_Transform>(e_camera);
             auto c_camera_camera = entt_registry.get<c_Camera>(e_camera);
-            // Update aspect ratio
+
+            // RF: This is ugly
+            // Updates aspect ratio
             c_camera_camera.aspect_ratio =
                 static_cast<float>(g4::game_state::width) / static_cast<float>(g4::game_state::height);
 
-            mat_proj = glm::perspective(glm::radians(c_camera_camera.fov_deg), c_camera_camera.aspect_ratio,
-                                        c_camera_camera.z_near, c_camera_camera.z_far);
-            basic_shader.set_mat4f("uModel", mat_model);
-            basic_shader.set_mat4f("uView", c_camera_transform.view_matrix());
-            basic_shader.set_mat4f("uProj", mat_proj);
+            glm::mat4 mat_model = glm::mat4(1.0f);
+            glm::mat4 mat_view = c_camera_transform.view_matrix();
+            glm::mat4 mat_proj = glm::perspective(glm::radians(c_camera_camera.fov_deg), c_camera_camera.aspect_ratio,
+                                                  c_camera_camera.z_near, c_camera_camera.z_far);
 
-            triangle_mesh.draw();
+            basic_shader.set_mat4f("uModel", mat_model);
+            basic_shader.set_mat4f("uView", mat_view);
+            basic_shader.set_mat4f("uProj", mat_proj);
+            g4::gapi::s_gl_render(entt_registry);
 
             glfwSwapBuffers(window);
             glfwPollEvents();
         }
+
+        g4::gapi::get_gl_graphics_api_instance().cleanup_all();
     }
 
     glfwTerminate();

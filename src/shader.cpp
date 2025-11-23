@@ -11,8 +11,7 @@
 std::string get_file_contents(const std::filesystem::path& path) {
     std::ifstream file(path, std::ios::in | std::ios::binary);
     if (!file.is_open()) {
-        throw std::runtime_error("Failed to open file: " +
-                                 std::filesystem::absolute(path).string());
+        throw std::runtime_error("Failed to open file: " + std::filesystem::absolute(path).string());
     }
 
     std::ostringstream ss;
@@ -20,8 +19,7 @@ std::string get_file_contents(const std::filesystem::path& path) {
     return ss.str();
 }
 
-unsigned int create_shader_module(unsigned int type,
-                                  const std::string& source) {
+unsigned int create_shader_module(unsigned int type, const std::string& source) {
     const char* source_code_cstr = source.c_str();
 
     unsigned int shaderId;
@@ -33,10 +31,8 @@ unsigned int create_shader_module(unsigned int type,
     GL_CALL(glGetShaderiv(shaderId, GL_COMPILE_STATUS, &status));
     if (!status) {
         char infoLog[MAX_SHADER_INFO_LOG_SIZE];
-        GL_CALL(glGetShaderInfoLog(shaderId, MAX_SHADER_INFO_LOG_SIZE, nullptr,
-                                   infoLog));
-        log<LogLevel::Error>("Shader compilation failed: " +
-                             std::string(infoLog));
+        GL_CALL(glGetShaderInfoLog(shaderId, MAX_SHADER_INFO_LOG_SIZE, nullptr, infoLog));
+        log<LogLevel::Error>("Shader compilation failed: " + std::string(infoLog));
         GL_CALL(glDeleteShader(shaderId));
         return 0;
     }
@@ -44,26 +40,20 @@ unsigned int create_shader_module(unsigned int type,
     return shaderId;
 }
 
-unsigned int create_shader_program(const std::filesystem::path& vertexPath,
-                                   const std::filesystem::path& fragmentPath) {
+unsigned int create_shader_program(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath) {
     auto vertexShaderSource = get_file_contents(vertexPath);
     auto fragmentShaderSource = get_file_contents(fragmentPath);
 
     if (vertexShaderSource.empty() || fragmentShaderSource.empty())
         throw std::runtime_error("Failed to load shader sources.");
 
-    unsigned int vertexShader =
-        create_shader_module(GL_VERTEX_SHADER, vertexShaderSource);
-    unsigned int fragmentShader =
-        create_shader_module(GL_FRAGMENT_SHADER, fragmentShaderSource);
+    unsigned int vertexShader = create_shader_module(GL_VERTEX_SHADER, vertexShaderSource);
+    unsigned int fragmentShader = create_shader_module(GL_FRAGMENT_SHADER, fragmentShaderSource);
 
     // log abs path
+    log<LogLevel::Info>(std::format("Compiling vertex shader @ {}", std::filesystem::absolute(vertexPath).string()));
     log<LogLevel::Info>(
-        std::format("Compiling vertex shader @ {}",
-                    std::filesystem::absolute(vertexPath).string()));
-    log<LogLevel::Info>(
-        std::format("Compiling fragment shader @ {}",
-                    std::filesystem::absolute(fragmentPath).string()));
+        std::format("Compiling fragment shader @ {}", std::filesystem::absolute(fragmentPath).string()));
 
     unsigned int shaderProgram = glCreateProgram();
     GL_CALL(glAttachShader(shaderProgram, vertexShader));
@@ -74,10 +64,8 @@ unsigned int create_shader_program(const std::filesystem::path& vertexPath,
     GL_CALL(glGetProgramiv(shaderProgram, GL_LINK_STATUS, &status));
     if (!status) {
         char infoLog[MAX_SHADER_INFO_LOG_SIZE];
-        GL_CALL(glGetProgramInfoLog(shaderProgram, MAX_SHADER_INFO_LOG_SIZE,
-                                    nullptr, infoLog));
-        log<LogLevel::Error>("Shader program linking failed: " +
-                             std::string(infoLog));
+        GL_CALL(glGetProgramInfoLog(shaderProgram, MAX_SHADER_INFO_LOG_SIZE, nullptr, infoLog));
+        log<LogLevel::Error>("Shader program linking failed: " + std::string(infoLog));
         throw std::runtime_error("Failed to link shader program.");
     }
 
@@ -91,15 +79,12 @@ int get_uniform_location(unsigned int programId, const std::string& name) {
     int location;
     GL_CALL(location = glGetUniformLocation(programId, name.c_str()));
     if (location == -1) {
-        log<LogLevel::Warn>(
-            "Uniform '" + name +
-            "' not found for shader id : " + std::to_string(programId));
+        log<LogLevel::Warn>("Uniform '" + name + "' not found for shader id : " + std::to_string(programId));
     }
     return location;
 }
 
-Shader::Shader(const std::filesystem::path& vertexPath,
-               const std::filesystem::path& fragmentPath) {
+Shader::Shader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath) {
     id = create_shader_program(vertexPath, fragmentPath);
 }
 
@@ -126,8 +111,7 @@ void Shader::set_float(const std::string& name, float value) const {
     GL_CALL(glUniform1f(location, value));
 }
 
-void Shader::set_vecnf(const std::string& name,
-                       std::span<const float> values) const {
+void Shader::set_vecnf(const std::string& name, std::span<const float> values) const {
     auto location = get_uniform_location(id, name);
     switch (values.size()) {
         case 2:
@@ -140,8 +124,7 @@ void Shader::set_vecnf(const std::string& name,
             GL_CALL(glUniform4fv(location, 1, values.data()));
             break;
         default:
-            throw std::runtime_error(
-                "set_vecnf only supports sizes 2, 3, or 4.");
+            throw std::runtime_error("set_vecnf only supports sizes 2, 3, or 4.");
     }
 }
 

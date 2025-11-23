@@ -14,8 +14,7 @@ inline glm::vec3 proj(glm::vec3 vec, glm::vec3 base) {
 // Runs gram-schmidt to get orthogonal basis
 // `normalized_us` : set of normalized vectors (must be linearly independent)
 template <size_t M>
-std::array<glm::vec3, M> orthonormalize_normalized_vec3s(
-    std::array<glm::vec3, M> normalized_us) {
+std::array<glm::vec3, M> orthonormalize_normalized_vec3s(std::array<glm::vec3, M> normalized_us) {
     std::array<glm::vec3, M> normalized_vs;
 
     for (size_t i = 0; i < normalized_us.size(); i++) {

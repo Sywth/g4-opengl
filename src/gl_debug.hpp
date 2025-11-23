@@ -19,10 +19,8 @@ const char* translate_gl_get_error_enum_message(GLenum error_code);
 inline void check_gl_error(const char* file, int line) {
     GLenum error;
     while ((error = glGetError()) != GL_NO_ERROR) {
-        std::cout << "[GL CALL ERR] at " << file << ":" << line
-                  << " - Error code: 0x" << std::hex << error << std::dec
-                  << "\n\t(" << translate_gl_get_error_enum_message(error)
-                  << ")" << std::endl;
+        std::cout << "[GL CALL ERR] at " << file << ":" << line << " - Error code: 0x" << std::hex << error << std::dec
+                  << "\n\t(" << translate_gl_get_error_enum_message(error) << ")" << std::endl;
     }
 }
 

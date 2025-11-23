@@ -82,7 +82,9 @@
         "*.in": "cpp",
         "string_view": "cpp",
         "array": "cpp",
-        "ranges": "cpp"
+        "ranges": "cpp",
+        "codecvt": "cpp",
+        "deque": "cpp"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }
