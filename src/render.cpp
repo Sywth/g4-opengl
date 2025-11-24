@@ -6,12 +6,12 @@
 
 namespace g4::gapi {
 
-std::unordered_map<entt::entity, gl_MeshResources> gl_GraphicsApi::entity_to_mesh_resources;
-std::unordered_set<entt::entity> gl_GraphicsApi::uploaded_meshes;
-std::unordered_map<entt::entity, vk_MeshResources> vk_GraphicsApi::entity_to_mesh_resources;
-std::unordered_set<entt::entity> vk_GraphicsApi::uploaded_meshes;
+// --- OpenGl Implementation ---
+#if defined(USE_GAPI_OPENGL)
+std::unordered_map<entt::entity, gl_MeshResources> GraphicsApi::gl_entity_to_mesh_resources;
+std::unordered_set<entt::entity> GraphicsApi::gl_uploaded_meshes;
 
-gl_MeshResources gl_get_mesh_resources(c_Mesh& mesh) {
+gl_MeshResources get_mesh_resources(c_Mesh& mesh) {
     gl_MeshResources resources{};
 
     GL_CALL(glGenVertexArrays(1, &resources.vao));
@@ -38,39 +38,9 @@ gl_MeshResources gl_get_mesh_resources(c_Mesh& mesh) {
     return resources;
 }
 
-void s_gl_render(entt::registry& registry) {
-    auto view = registry.view<c_Mesh>();
-    for (auto entity : view) {
-        auto entity_resources = gl_GraphicsApi::entity_to_mesh_resources.find(entity);
-        auto entity_uploaded = gl_GraphicsApi::uploaded_meshes.find(entity);
-
-        bool b_has_resources = (entity_resources != gl_GraphicsApi::entity_to_mesh_resources.end());
-        bool b_is_uploaded = (entity_uploaded != gl_GraphicsApi::uploaded_meshes.end());
-        if (b_has_resources != b_is_uploaded) {
-            assert(false && "Inconsistent mesh upload state detected");
-        }
-
-        if (!b_is_uploaded || !b_has_resources) {
-            // OPT: Is this copy worth it / needed? No right?
-            auto mesh = registry.get<c_Mesh>(entity);
-            auto uploaded_resources = gl_get_mesh_resources(mesh);
-
-            // Record its uploaded state and corresponding resources
-            gl_GraphicsApi::entity_to_mesh_resources[entity] = uploaded_resources;
-            gl_GraphicsApi::uploaded_meshes.insert(entity);
-            continue;
-        }
-
-        const gl_MeshResources& resources = entity_resources->second;
-        GL_CALL(glBindVertexArray(resources.vao));
-        GL_CALL(glDrawElements(GL_TRIANGLES, resources.indices_count, GL_UNSIGNED_INT, 0));
-        GL_CALL(glBindVertexArray(0));
-    }
-}
-
-void gl_GraphicsApi::cleanup_mesh(entt::entity entity) {
-    auto entity_resources = gl_GraphicsApi::entity_to_mesh_resources.find(entity);
-    bool b_has_resources = (entity_resources != gl_GraphicsApi::entity_to_mesh_resources.end());
+void GraphicsApi::cleanup_mesh(entt::entity entity) {
+    auto entity_resources = GraphicsApi::gl_entity_to_mesh_resources.find(entity);
+    bool b_has_resources = (entity_resources != GraphicsApi::gl_entity_to_mesh_resources.end());
     if (!b_has_resources) {
         return;
     }
@@ -80,41 +50,75 @@ void gl_GraphicsApi::cleanup_mesh(entt::entity entity) {
     GL_CALL(glDeleteBuffers(1, &resources.ebo));
     GL_CALL(glDeleteVertexArrays(1, &resources.vao));
 
-    gl_GraphicsApi::entity_to_mesh_resources.erase(entity_resources);
-    gl_GraphicsApi::uploaded_meshes.erase(entity);
+    GraphicsApi::gl_entity_to_mesh_resources.erase(entity_resources);
+    GraphicsApi::gl_uploaded_meshes.erase(entity);
 }
 
-void gl_GraphicsApi::cleanup_all() {
-    for (auto& [entity, resources] : gl_GraphicsApi::entity_to_mesh_resources) {
+void GraphicsApi::cleanup_all() {
+    for (auto& [entity, resources] : GraphicsApi::gl_entity_to_mesh_resources) {
         GL_CALL(glDeleteBuffers(1, &resources.vbo));
         GL_CALL(glDeleteBuffers(1, &resources.ebo));
         GL_CALL(glDeleteVertexArrays(1, &resources.vao));
     }
 
-    gl_GraphicsApi::entity_to_mesh_resources.clear();
-    gl_GraphicsApi::uploaded_meshes.clear();
+    GraphicsApi::gl_entity_to_mesh_resources.clear();
+    GraphicsApi::gl_uploaded_meshes.clear();
 }
 
-gl_GraphicsApi& get_gl_graphics_api_instance() {
-    static gl_GraphicsApi instance{};
-    return instance;
-}
+void s_render(entt::registry& registry) {
+    auto view = registry.view<c_Mesh>();
+    for (auto entity : view) {
+        auto entity_resources = GraphicsApi::gl_entity_to_mesh_resources.find(entity);
+        auto entity_uploaded = GraphicsApi::gl_uploaded_meshes.find(entity);
 
-void s_vk_render(entt::registry& registry) {
-    // FUTURE: Implement Vulkan rendering here
+        bool b_has_resources = (entity_resources != GraphicsApi::gl_entity_to_mesh_resources.end());
+        bool b_is_uploaded = (entity_uploaded != GraphicsApi::gl_uploaded_meshes.end());
+        if (b_has_resources != b_is_uploaded) {
+            assert(false && "Inconsistent mesh upload state detected");
+        }
+
+        if (!b_is_uploaded || !b_has_resources) {
+            // OPT: Is this copy worth it / needed? No right?
+            auto mesh = registry.get<c_Mesh>(entity);
+            auto uploaded_resources = get_mesh_resources(mesh);
+            // Record its uploaded state and corresponding resources
+            GraphicsApi::gl_entity_to_mesh_resources[entity] = uploaded_resources;
+            GraphicsApi::gl_uploaded_meshes.insert(entity);
+            continue;
+        }
+
+        const gl_MeshResources& resources = entity_resources->second;
+        GL_CALL(glBindVertexArray(resources.vao));
+        GL_CALL(glDrawElements(GL_TRIANGLES, resources.indices_count, GL_UNSIGNED_INT, 0));
+        GL_CALL(glBindVertexArray(0));
+    }
+}
+#endif
+
+// --- Vulkan Implementation ---
+#if defined(USE_GAPI_VULKAN)
+std::unordered_map<entt::entity, vk_MeshResources> GraphicsApi::vk_entity_to_mesh_resources;
+std::unordered_set<entt::entity> GraphicsApi::vk_uploaded_meshes;
+
+gl_MeshResources get_mesh_resources(c_Mesh& mesh) {
     throw std::logic_error("Vulkan support not added yet.");
 }
 
-void vk_GraphicsApi::cleanup_mesh(entt::entity entity) {
+void GraphicsApi::cleanup_mesh(entt::entity entity) {
     throw std::runtime_error("Vulkan support not added yet.");
 }
 
-void vk_GraphicsApi::cleanup_all() {
+void GraphicsApi::cleanup_all() {
     throw std::runtime_error("Vulkan support not added yet.");
 }
-vk_GraphicsApi& get_vk_graphics_api_instance() {
-    static vk_GraphicsApi instance{};
+
+void s_render(entt::registry& registry) {
+    throw std::runtime_error("Vulkan support not added yet.");
+}
+#endif
+
+GraphicsApi& get_gapi_instance() {
+    static GraphicsApi instance;
     return instance;
 }
-
 }  // namespace g4::gapi

@@ -1,13 +1,14 @@
 ### Current TODOs
 
-- [ ] Make mesh actually api agnostic
-  - [ ] Use stratgey or adapter pattern for graphics back end in [render.hpp](src/render.hpp)
+- [ ] Consider moving from macros to compile time polymorphism in [render.hpp](src/render.hpp)
 - [ ] Fix and use the namespaces properly and decide how to use them
 - [ ] Fix quaterntion drfit / movement issues after repeatly hitting max and min pitch (i.e. shaking mouse fucks up the camera after a bit). Issues is highly likely in [camera_look in camera.cpp](src/camera.cpp)
 - [ ] Continue refactoring and fixing main to slowly use ECS
   - [ ] Shader class needs to be an ECS component
 
 ### Prev TODOs
+
+- [x] Use stratgey or adapter pattern for graphics back end in [render.hpp](src/render.hpp)
 
 - [x] Fix this new ecs system for camera
   - [ ] Wtf happened to the movment and looking system

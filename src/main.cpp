@@ -260,13 +260,13 @@ int main() {
             basic_shader.set_mat4f("uModel", mat_model);
             basic_shader.set_mat4f("uView", mat_view);
             basic_shader.set_mat4f("uProj", mat_proj);
-            g4::gapi::s_gl_render(entt_registry);
+            g4::gapi::s_render(entt_registry);
 
             glfwSwapBuffers(window);
             glfwPollEvents();
         }
 
-        g4::gapi::get_gl_graphics_api_instance().cleanup_all();
+        g4::gapi::get_gapi_instance().cleanup_all();
     }
 
     glfwTerminate();
