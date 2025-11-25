@@ -222,6 +222,9 @@ int main() {
         entt_registry.emplace<c_Transform>(e_camera, c_Transform{});
         entt_registry.emplace<c_Camera>(e_camera, c_Camera{});
 
+        // Create graphics API instance
+        g4::gapi::GraphicsApi graphics_api{};
+
         //   --- Render Loop ---
         while (!glfwWindowShouldClose(window)) {
             handle_window_events(window);
@@ -260,13 +263,11 @@ int main() {
             basic_shader.set_mat4f("uModel", mat_model);
             basic_shader.set_mat4f("uView", mat_view);
             basic_shader.set_mat4f("uProj", mat_proj);
-            g4::gapi::s_render(entt_registry);
+            g4::gapi::s_render(entt_registry, graphics_api);
 
             glfwSwapBuffers(window);
             glfwPollEvents();
         }
-
-        g4::gapi::get_gapi_instance().cleanup_all();
     }
 
     glfwTerminate();

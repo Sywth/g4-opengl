@@ -35,19 +35,19 @@ struct vk_MeshResources {};
 class GraphicsApi {
    public:
     void cleanup_mesh(entt::entity entity);
-    void cleanup_all();
+    GraphicsApi();
+    ~GraphicsApi();
 
 #if defined(USE_GAPI_OPENGL)
-    static std::unordered_map<entt::entity, gl_MeshResources> gl_entity_to_mesh_resources;
-    static std::unordered_set<entt::entity> gl_uploaded_meshes;
+    std::unordered_map<entt::entity, gl_MeshResources> gl_entity_to_mesh_resources;
+    std::unordered_set<entt::entity> gl_uploaded_meshes;
 #endif
 
 #if defined(USE_GAPI_VULKAN)
-    static std::unordered_map<entt::entity, vk_MeshResources> vk_entity_to_mesh_resources;
-    static std::unordered_set<entt::entity> vk_uploaded_meshes;
+    std::unordered_map<entt::entity, vk_MeshResources> vk_entity_to_mesh_resources;
+    std::unordered_set<entt::entity> vk_uploaded_meshes;
 #endif
 };
 
-GraphicsApi& get_gapi_instance();
-void s_render(entt::registry& registry);
+void s_render(entt::registry& registry, GraphicsApi& graphics_api);
 }  // namespace g4::gapi

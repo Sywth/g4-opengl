@@ -5,11 +5,9 @@
 #include <glad/glad.h>
 
 namespace g4::gapi {
-
 // --- OpenGl Implementation ---
 #if defined(USE_GAPI_OPENGL)
-std::unordered_map<entt::entity, gl_MeshResources> GraphicsApi::gl_entity_to_mesh_resources;
-std::unordered_set<entt::entity> GraphicsApi::gl_uploaded_meshes;
+GraphicsApi::GraphicsApi() : gl_entity_to_mesh_resources(), gl_uploaded_meshes() {}
 
 gl_MeshResources get_mesh_resources(c_Mesh& mesh) {
     gl_MeshResources resources{};
@@ -38,9 +36,10 @@ gl_MeshResources get_mesh_resources(c_Mesh& mesh) {
     return resources;
 }
 
+// TODO: Fix this; this is not RAII compliant (should be defined in some destructor for the resource)
 void GraphicsApi::cleanup_mesh(entt::entity entity) {
-    auto entity_resources = GraphicsApi::gl_entity_to_mesh_resources.find(entity);
-    bool b_has_resources = (entity_resources != GraphicsApi::gl_entity_to_mesh_resources.end());
+    auto entity_resources = gl_entity_to_mesh_resources.find(entity);
+    bool b_has_resources = (entity_resources != gl_entity_to_mesh_resources.end());
     if (!b_has_resources) {
         return;
     }
@@ -50,29 +49,34 @@ void GraphicsApi::cleanup_mesh(entt::entity entity) {
     GL_CALL(glDeleteBuffers(1, &resources.ebo));
     GL_CALL(glDeleteVertexArrays(1, &resources.vao));
 
-    GraphicsApi::gl_entity_to_mesh_resources.erase(entity_resources);
-    GraphicsApi::gl_uploaded_meshes.erase(entity);
+    gl_entity_to_mesh_resources.erase(entity_resources);
+    gl_uploaded_meshes.erase(entity);
 }
 
-void GraphicsApi::cleanup_all() {
-    for (auto& [entity, resources] : GraphicsApi::gl_entity_to_mesh_resources) {
+GraphicsApi::~GraphicsApi() {
+    std::cout << "Cleaning up all mesh resources..." << std::endl;
+    for (auto& [entity, resources] : gl_entity_to_mesh_resources) {
         GL_CALL(glDeleteBuffers(1, &resources.vbo));
         GL_CALL(glDeleteBuffers(1, &resources.ebo));
         GL_CALL(glDeleteVertexArrays(1, &resources.vao));
     }
 
-    GraphicsApi::gl_entity_to_mesh_resources.clear();
-    GraphicsApi::gl_uploaded_meshes.clear();
+    gl_entity_to_mesh_resources.clear();
+    gl_uploaded_meshes.clear();
 }
 
-void s_render(entt::registry& registry) {
+// TODO: Should not take in GraphicsApi instance! This a temporary fix for a fundamental problem :
+//  The GraphicsApi class should not exist! The data about vertices etc should exist outside the ECS yes
+//  but it should be owned by the ECS via a unique ptr. Each mesh should be refered to via a unique ptr.
+void s_render(entt::registry& registry, GraphicsApi& gapi_instance) {
     auto view = registry.view<c_Mesh>();
     for (auto entity : view) {
-        auto entity_resources = GraphicsApi::gl_entity_to_mesh_resources.find(entity);
-        auto entity_uploaded = GraphicsApi::gl_uploaded_meshes.find(entity);
+        auto entity_resources = gapi_instance.gl_entity_to_mesh_resources.find(entity);
+        auto entity_uploaded = gapi_instance.gl_uploaded_meshes.find(entity);
 
-        bool b_has_resources = (entity_resources != GraphicsApi::gl_entity_to_mesh_resources.end());
-        bool b_is_uploaded = (entity_uploaded != GraphicsApi::gl_uploaded_meshes.end());
+        bool b_has_resources = (entity_resources != gapi_instance.gl_entity_to_mesh_resources.end());
+        bool b_is_uploaded = (entity_uploaded != gapi_instance.gl_uploaded_meshes.end());
+
         if (b_has_resources != b_is_uploaded) {
             assert(false && "Inconsistent mesh upload state detected");
         }
@@ -82,8 +86,8 @@ void s_render(entt::registry& registry) {
             auto mesh = registry.get<c_Mesh>(entity);
             auto uploaded_resources = get_mesh_resources(mesh);
             // Record its uploaded state and corresponding resources
-            GraphicsApi::gl_entity_to_mesh_resources[entity] = uploaded_resources;
-            GraphicsApi::gl_uploaded_meshes.insert(entity);
+            gapi_instance.gl_entity_to_mesh_resources[entity] = uploaded_resources;
+            gapi_instance.gl_uploaded_meshes.insert(entity);
             continue;
         }
 
@@ -97,8 +101,7 @@ void s_render(entt::registry& registry) {
 
 // --- Vulkan Implementation ---
 #if defined(USE_GAPI_VULKAN)
-std::unordered_map<entt::entity, vk_MeshResources> GraphicsApi::vk_entity_to_mesh_resources;
-std::unordered_set<entt::entity> GraphicsApi::vk_uploaded_meshes;
+GraphicsApi::GraphicsApi() : vk_entity_to_mesh_resources(), vk_uploaded_meshes() {}
 
 gl_MeshResources get_mesh_resources(c_Mesh& mesh) {
     throw std::logic_error("Vulkan support not added yet.");
@@ -112,13 +115,10 @@ void GraphicsApi::cleanup_all() {
     throw std::runtime_error("Vulkan support not added yet.");
 }
 
-void s_render(entt::registry& registry) {
+// TODO: Should not take in GraphicsApi instance! This a temporary fix for a fundamental problem discussed above
+void s_render(entt::registry& registry, GraphicsApi& gapi_instance) {
     throw std::runtime_error("Vulkan support not added yet.");
 }
 #endif
 
-GraphicsApi& get_gapi_instance() {
-    static GraphicsApi instance;
-    return instance;
-}
 }  // namespace g4::gapi
