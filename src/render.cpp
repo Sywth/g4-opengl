@@ -68,7 +68,7 @@ GraphicsApi::~GraphicsApi() {
 // TODO: Should not take in GraphicsApi instance! This a temporary fix for a fundamental problem :
 //  The GraphicsApi class should not exist! The data about vertices etc should exist outside the ECS yes
 //  but it should be owned by the ECS via a unique ptr. Each mesh should be refered to via a unique ptr.
-void s_render(entt::registry& registry, GraphicsApi& gapi_instance) {
+void s_ex_render(entt::registry& registry, GraphicsApi& gapi_instance) {
     auto view = registry.view<c_Mesh>();
     for (auto entity : view) {
         auto entity_resources = gapi_instance.gl_entity_to_mesh_resources.find(entity);

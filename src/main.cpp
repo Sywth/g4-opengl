@@ -263,7 +263,7 @@ int main() {
             basic_shader.set_mat4f("uModel", mat_model);
             basic_shader.set_mat4f("uView", mat_view);
             basic_shader.set_mat4f("uProj", mat_proj);
-            g4::gapi::s_render(entt_registry, graphics_api);
+            g4::gapi::s_ex_render(entt_registry, graphics_api);
 
             glfwSwapBuffers(window);
             glfwPollEvents();

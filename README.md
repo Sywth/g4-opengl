@@ -50,7 +50,8 @@ Misc :
 
 - `c_` prefix for ECS component (struct and var)
 - `e_` prefix for ECS entity id (var)
-- `s_` prefix for ECS system (function name)
+- `s_` prefix for ECS system (function name (only takes registry as arg))
+- `s_ex_` prefix for ECS system that takes external input (e.g. renderer might take an asset manager also)
 
 - `FIXME: ` - When code causes critical issues (i.e. causes compile errors or crashes)
 - `TODO: ` - Modifications / addition that need to be

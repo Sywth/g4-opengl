@@ -49,5 +49,5 @@ class GraphicsApi {
 #endif
 };
 
-void s_render(entt::registry& registry, GraphicsApi& graphics_api);
+void s_ex_render(entt::registry& registry, GraphicsApi& graphics_api);
 }  // namespace g4::gapi
