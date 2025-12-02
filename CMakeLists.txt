@@ -12,16 +12,20 @@ find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
 # find_package(assimp REQUIRED) # TODO Figure out at some point why this breaks cmake 
 
-# Compiles all files in ./src automatically
-file(GLOB_RECURSE SRC_FILES
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+set(SRC_FILES 
+    src/main.cpp
+    src/camera.cpp
+    src/game_state.cpp
+    src/gl_debug.cpp
+    src/math.cpp
+    src/render.cpp
+    src/shader.cpp
+    src/triangle_mesh.cpp
 )
 
 # You must manually add vendor files here
 set(VENDOR_FILES
     vendor/glad.c
-    # vendor/entt.hpp # Like this?
 )
 
 add_executable(g4
