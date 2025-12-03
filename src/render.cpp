@@ -1,6 +1,5 @@
 #include "render.hpp"
 #include "gl_debug.hpp"
-#include "mesh.hpp"
 
 #include <glad/glad.h>
 

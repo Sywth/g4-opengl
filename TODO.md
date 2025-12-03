@@ -1,5 +1,8 @@
 ### Current TODOs
 
+- [ ] Clean up render and chunk
+- [ ] Finish chunk implemention then clean code after
+
 - [ ] Fix lifetime handling in the `s_render` system which takes in two arguments due to graphics API instace owning the meshes in [render.cpp](src/render.cpp)
 - [ ] Consider moving from macros to compile time polymorphism in [render.hpp](src/render.hpp)
 - [ ] Fix and use the namespaces properly and decide how to use them

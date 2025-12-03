@@ -5,6 +5,8 @@
 #include <entt/entt.hpp>
 #include <unordered_map>
 
+#include "mesh.hpp"
+
 // REFACTOR: There might be a better way to do this; but atm i cba and i dont think its worth
 // technical debt. Yes this should be a simple interface where we define functions but C++ is
 // not a simple langauge. Hence we define our interface via macros. It would be easier to use class
@@ -26,6 +28,8 @@ struct gl_MeshResources {
     unsigned int ebo;
     unsigned int indices_count;
 };
+
+gl_MeshResources get_mesh_resources(c_Mesh& mesh);
 #endif
 
 #if defined(USE_GAPI_VULKAN)
